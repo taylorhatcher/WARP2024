@@ -69,7 +69,7 @@ filtered_data <- filtered_data %>%
 # Check for NAs in Temperature
 sum(is.na(filtered_data$Temperature))  # Count NAs in Temperature column
 
-# Calculate hourly means for each logger
+# Calculate hourly means for each logger ####### look at this section of code --- what is happening?
 hourly_means <- filtered_data %>%
   group_by(DateTime, Logger) %>%
   summarise(MeanTemperature = mean(Temperature, na.rm = TRUE), .groups = 'drop')
@@ -95,3 +95,4 @@ ggplot(hourly_means, aes(x = DateTime, y = Logger, fill = MeanTemperature)) +
        y = "Logger") +
   theme_minimal() +
   scale_fill_viridis_c()
+
