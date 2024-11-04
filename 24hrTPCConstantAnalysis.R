@@ -15,7 +15,14 @@ tpccurrent$fw <- as.numeric(tpccurrent$fw)
 
 tpccurrentrgr= (log(tpccurrent$fw) - log(tpccurrent$M0))/tpccurrent$duration
 
+tpccurrent$mom= tpccurrent$Female
+tpccurrent$ID= tpccurrent$Individual
+tpccurrent$UniID= paste(tpccurrent$temp, tpccurrent$mom, tpccurrent$ID, sep=".")
+#Calculate mass gained in each time treatment
+tpccurrent$mgain= tpccurrent$fw - tpccurrent$M0
 
+#Plot
+plot(tpccurrentrgr)
 
 
 
