@@ -69,7 +69,7 @@ tpc.plot = ggplot(tpc[tpc$dur %in% c(6,24),], aes(x=temp, y=rgr, color=time.per)
   xlab("Temperature (C)") +
   ylab("RGR (mg/mg/h)") +
   ggtitle("2024") +
-  ylim(-0.02, 0.06)
+  ylim(-0.02, 0.14)
 
 # Aggregate mean values with corrected standard error calculation
 tpc.agg <- tpc %>%
@@ -80,15 +80,7 @@ tpc.agg <- tpc %>%
   )
 tpc$time.per <- factor(tpc$time.per, levels = c("past", "current"))
 
-tpc.plot = ggplot(tpc[tpc$dur %in% c(6,24),], aes(x=temp, y=rgr, color=time.per)) +
-  geom_point(alpha=0.5) +
-  facet_grid(dur ~ instar) +
-  geom_smooth() +
-  theme_bw() +
-  xlab("Temperature (C)") +
-  ylab("RGR (mg/mg/h)") +
-  ggtitle("2024") +
-  ylim(-0.02, 0.06)
+
 
 setwd('/Volumes/GoogleDrive/Shared drives/TrEnCh/Projects/WARP/Analyses/figures/')
 pdf("2024TRNfeeding_constant.pdf",height = 8, width = 8)
