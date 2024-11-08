@@ -80,7 +80,11 @@ tpc.agg <- tpc %>%
   )
 tpc$time.per <- factor(tpc$time.per, levels = c("past", "current"))
 
-
+#plot family mean vaules 
+tpc.agg.f <- tpc %>%
+  group_by(FEMALE, temp) %>%
+  dplyr::summarise(mean = mean(value, na.rm = TRUE),
+                   se = sd(value, na.rm = TRUE)/length(value))
 
 setwd('/Volumes/GoogleDrive/Shared drives/TrEnCh/Projects/WARP/Analyses/figures/')
 pdf("2024TRNfeeding_constant.pdf",height = 8, width = 8)
