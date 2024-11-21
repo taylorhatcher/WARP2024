@@ -14,6 +14,8 @@ setwd("~/Desktop/Repos/WARP2024")
 tpc1 = read.csv("PrapaeW.1999.ConstantTempTPCs.4thinstar.jul2021.xlsx - data.csv")
 tpc1$instar=4
 
+#past data that includes a 6 hour time weighing: "Prapae.NC_WA.2000.TRNS.leaf" for 4th instar caterpillars
+#past data that includes some 9 hour weighings, some 6.5 hour weighings, and 24.5 hour weighings
 tpc2 = read.csv("PrapaeW.1999.ConstantTempTPCs.5thinstar.jul2021.xlsx - data.csv")
 names(tpc2)=names(tpc1)
 tpc2$instar=5
@@ -58,7 +60,8 @@ tpc= rbind(tpc.cs, tpc.ps)
 
 tpc$dur=NA
 tpc$time= as.numeric(tpc$time)
-tpc[tpc$time>5 & tpc$time<11 & tpc$time.per=="past","dur"]=6
+# tpc[tpc$time>5 & tpc$time<11 & tpc$time.per=="past","dur"]=6
+tpc[tpc$time>5 & tpc$time<6.6 & tpc$time.per=="past","dur"]=6
 tpc[tpc$time>20 & tpc$time<26 & tpc$time.per=="past","dur"]=24
 tpc[tpc$time.per=="current","dur"]= tpc[tpc$time.per=="current","duration"]
 
@@ -69,7 +72,7 @@ tpc.plot = ggplot(tpc[tpc$dur %in% c(6,24),], aes(x=temp, y=rgr, color=time.per)
   xlab("Temperature (C)") +
   ylab("RGR (mg/mg/h)") +
   ggtitle("2024") +
-  ylim(-0.02, 0.14)
+  ylim(-0.10, 0.14)
 # Aggregate mean values with corrected standard error calculation
     tpc.agg <- tpc %>%
       group_by(temp, time.per, dur, instar) %>%
@@ -88,23 +91,23 @@ tpc.plot = ggplot(tpc[tpc$dur %in% c(6,24),], aes(x=temp, y=rgr, color=time.per)
       xlab("Temperature(°C)") +
       ylab("RGR (mg/mg/hr)") +
       ggtitle("Past vs. Present Constant TPC")
-    ylim(-0.02, 0.14)
+    ylim(-0.10, 0.14)
     
     
     
     # Fit a linear model and calculate predictions for each group
-    tpc.fit <- tpc.valid %>%
-      group_by(time.per, dur, instar) %>%
-      do({
-        model <- lm(mean ~ temp, data = .)
-        data.frame(
-          temp = seq(min(.$temp, na.rm = TRUE), max(.$temp, na.rm = TRUE), length.out = 100),  # Generate temperature sequence
-          mean = predict(model, newdata = data.frame(temp = seq(min(.$temp, na.rm = TRUE), max(.$temp, na.rm = TRUE), length.out = 100))),
-          time.per = unique(.$time.per),
-          dur = unique(.$dur),
-          instar = unique(.$instar)
-        )
-      })
+    #tpc.fit <- tpc.valid %>%
+     # group_by(time.per, dur, instar) %>%
+     # do({
+       # model <- lm(mean ~ temp, data = .)
+      #  data.frame(
+       #   temp = seq(min(.$temp, na.rm = TRUE), max(.$temp, na.rm = TRUE), length.out = 100),  # Generate temperature sequence
+       #   mean = predict(model, newdata = data.frame(temp = seq(min(.$temp, na.rm = TRUE), max(.$temp, na.rm = TRUE), length.out = 100))),
+       #   time.per = unique(.$time.per),
+       #   dur = unique(.$dur),
+        #  instar = unique(.$instar)
+       # )
+    #   })
     
     
     
