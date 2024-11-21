@@ -73,6 +73,13 @@ tpc.plot = ggplot(tpc[tpc$dur %in% c(6,24),], aes(x=temp, y=rgr, color=time.per)
   ylab("RGR (mg/mg/h)") +
   ggtitle("2024") +
   ylim(-0.10, 0.14)
+
+###Code I am working on to plot family mean values #plot family mean values # superimpose plots???
+tpc.agg.f <-tpc %>%
+  group_by(mom) %>%
+  dplyr::summarise(mean = mean(rgr, na.rm = TRUE),
+                   se = sd(rgr, na.rm = TRUE)/length(value))
+
 # Aggregate mean values with corrected standard error calculation
     tpc.agg <- tpc %>%
       group_by(temp, time.per, dur, instar) %>%
@@ -92,7 +99,8 @@ tpc.plot = ggplot(tpc[tpc$dur %in% c(6,24),], aes(x=temp, y=rgr, color=time.per)
       ylab("RGR (mg/mg/hr)") +
       ggtitle("Past vs. Present Constant TPC")
     ylim(-0.10, 0.14)
-    
+ 
+
     
     
     # Fit a linear model and calculate predictions for each group
