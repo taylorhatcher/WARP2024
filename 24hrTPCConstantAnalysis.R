@@ -119,8 +119,8 @@ tpc.agg.f <-tpc %>%
     
     
     
-    # Print the plot
-    print(tpc.plot)
+# Print the plot
+print(tpc.plot)
     
 setwd('/Volumes/GoogleDrive/Shared drives/TrEnCh/Projects/WARP/Analyses/figures/')
 pdf("2024TRNfeeding_constant.pdf",height = 8, width = 8)
