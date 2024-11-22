@@ -96,4 +96,11 @@ ggplot(hourly_means, aes(x = DateTime, y = Logger, fill = MeanTemperature)) +
        y = "Logger") +
   theme_minimal() +
   scale_fill_viridis_c()
-
+# goal: add min, max distributions 
+# Lauren's code from WApierids:
+# ggplot(t.dat, aesd(x=tmin, lty=period,color=site))+
+# facet_wrap(~season)+
+# geom_density()+scale_color_manual(values=c("blue","orange","darkgreen"))+
+#xlim(-20,30)+
+#xlab("Temperature (°C)")+
+#theme_bw(base_size = 18)
