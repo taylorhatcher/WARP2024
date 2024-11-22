@@ -88,6 +88,11 @@ tpc.agg.f <-tpc %>%
         se = sd(rgr, na.rm = TRUE) / sqrt(n())
       )
     tpc$time.per <- factor(tpc$time.per, levels = c("past", "current"))
+#Plot family mean values for constant tpc
+    tpc.agg.f <- tpc %>% # new code added 11-22-24
+      group_by(mom, temp, duration, instar)%>% # new code added 11-22-24
+      dplyr::summarise(mean = mean(rgr, na.rm = TRUE), # new code added 11-22-24E)
+                       se = sd(rgr, na.rm = TRUE/length(rgr)))# new code added 11-22-24
     
     #plot with error bars
     tpc.plot <- ggplot(tpc.agg[tpc.agg$dur %in% c(6, 24), ],aes(x = temp, y = mean, color = time.per, group = time.per)) +
