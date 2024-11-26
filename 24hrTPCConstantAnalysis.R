@@ -110,15 +110,15 @@ tpc.plot <- ggplot() +
   #   aes(x = temp, y = mean, group = mom),
   #   color = "black", linetype = "solid", size = 1
   # ) +
-  # # Layer for family-level aggregated data
-  # geom_point(
-  #   data = tpc.agg.f,
-  #   aes(x = temp, y = mean),
-  #   color = "blue", size = 1, stroke = 1.2) +
+   # Layer for family-level aggregated data
+   geom_point(
+     data = tpc.agg.f,
+     aes(x = temp, y = mean)) +
+ #    color = "blue", size = 1, stroke = 1.2) +
   # geom_errorbar(
-  #   data = tpc.agg.f,
-  #   aes(x = temp, ymin = mean - se, ymax = mean + se, group = mom),
-  #   width = 0.3, color = "red", alpha = 0.7
+   #  data = tpc.agg.f,
+   #  aes(x = temp, ymin = mean - se, ymax = mean + se, group = mom),
+  # width = 0.3, color = "red", alpha = 0.7
   # ) +
   facet_grid(dur ~ instar) + #facet by duration and instar
   theme_bw() +
