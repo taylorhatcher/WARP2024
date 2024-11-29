@@ -75,10 +75,10 @@ tpc[tpc$time.per=="current","dur"]= tpc[tpc$time.per=="current","duration"]
 # ylim(-0.10, 0.14)
 
 #Plot family mean values for constant tpc
-tpc.agg.f <- tpc %>% # new code added 11-22-24
-  group_by(mom, temp, duration, instar)%>% # new code added 11-22-24
-  dplyr::summarise(mean = mean(rgr, na.rm = TRUE), # new code added 11-22-24E)
-                   se = sd(rgr, na.rm = TRUE) /sqrt(n())
+#tpc.agg.f <- tpc %>% # new code added 11-22-24
+  #group_by(mom, temp, duration, instar)%>% # new code added 11-22-24
+ # dplyr::summarise(mean = mean(rgr, na.rm = TRUE), # new code added 11-22-24E)
+ #                  se = sd(rgr, na.rm = TRUE) /sqrt(n())
   )# new code added 11-22-24
 # Aggregating by temperature, duration, and instar
 # Aggregate mean values with corrected standard error calculation
