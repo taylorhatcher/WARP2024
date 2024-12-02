@@ -259,16 +259,16 @@ tpc.agg <- tpc %>%
     mean = mean(rgr, na.rm = TRUE),
     se = sd(rgr, na.rm = TRUE) / sqrt(n())
   )
-#plotting family means with error bars
- tpc.plot <- ggplot(tpc.agg[tpc.agg$dur %in% c(6, 24), ],aes(x = temp, y = mean, color = time.per, group = time.per)) +
-   geom_point(alpha = 0.7, size = 2) + # Points for mean values
- geom_errorbar(aes(ymin = mean - se, ymax = mean +se), width = 0.3, alpha = 0.6) + # Error bars
-facet_grid(dur ~ instar) + #Facets for duration and instar
-  theme_bw() +
-  xlab("Temperature(°C)") +
-  ylab("RGR (mg/mg/hr)") +
-  ggtitle("Past vs. Present Constant TPC")
- ylim(-0.10, 0.14)
+# #plotting family means with error bars
+#  tpc.plot <- ggplot(tpc.agg[tpc.agg$dur %in% c(6, 24), ],aes(x = temp, y = mean, color = time.per, group = time.per)) +
+#    geom_point(alpha = 0.7, size = 2) + # Points for mean values
+#  geom_errorbar(aes(ymin = mean - se, ymax = mean +se), width = 0.3, alpha = 0.6) + # Error bars
+# facet_grid(dur ~ instar) + #Facets for duration and instar
+#   theme_bw() +
+#   xlab("Temperature(°C)") +
+#   ylab("RGR (mg/mg/hr)") +
+#   ggtitle("Past vs. Present Constant TPC")
+#  ylim(-0.10, 0.14)
 
 tpc$time.per <- factor(tpc$time.per, levels = c("past", "current"))
 print(tpc.plot)
