@@ -47,7 +47,7 @@ long_data <- melt(combined_loggers,
                   value.name = "Temperature")
 
 # Since the logger names are V2, V3, etc., map these to meaningful logger names
-long_data[, Logger := factor(Logger, labels = c("Logger 1 - Temp 1", "Logger 1 - Temp 2", "Logger 1 - Temp 3", 
+long_data[,Logger := factor(Logger, labels = c("Logger 1 - Temp 1", "Logger 1 - Temp 2", "Logger 1 - Temp 3", 
                                                 "Logger 1 - Temp 4", "Logger 2 - Temp 1", "Logger 2 - Temp 2", 
                                                 "Logger 2 - Temp 3", "Logger 2 - Temp 4", 
                                                 "Logger 3 - Temp 1", "Logger 3 - Temp 2", "Logger 3 - Temp 3"))]
@@ -57,7 +57,7 @@ start_date <- as.POSIXct("2024-06-22", format="%Y-%m-%d")
 end_date <- as.POSIXct("2024-08-15 23:59:59", format="%Y-%m-%d %H:%M:%S")
 
 # Check the structure of filtered_data to understand what's inside
-str(filtered_data)
+str(filtered_data) # something is happening here, it doesn't know what filtered_data is... address
 
 # Convert datetime to date and hour for grouping, ensuring it's in POSIXct format
 filtered_data <- filtered_data %>%
@@ -74,6 +74,33 @@ sum(is.na(filtered_data$Temperature))  # Count NAs in Temperature column
 hourly_means <- filtered_data %>%
   group_by(DateTime, Logger) %>%
   summarise(MeanTemperature = mean(Temperature, na.rm = TRUE), .groups = 'drop')
+
+# Calculate Min and Max temperatures for each logger
+temp_extremes <- filtered_data %>%
+  group_by(Logger) %>%
+  summarise(T_min = min(Temperature, na.rm = TRUE),
+            T_max = max(Temperature, na.rm = TRUE),
+            .groups = 'drop')
+
+# combine and reshape data for plotting
+temp_extremes_long <- temp_extremes %>%
+  pivot_longer(cols = c(T_min, T_max),
+               names_to = "Temperature_Type",
+               values_to = "Temperature")
+# Plotting min and max distributions
+ggplot(temp_extremes_long, aes(x = Temperature, color = Logger, lty = Temperature_Type)) +
+  geom_density(size = 1) +
+  facet_wrap(~Temperature_Type, scales = "free") #Separate plots for T_min and T_max
+  scale_color_viridis_d() +
+  xlim(-20, 50) +
+    labs(title = "Temperature Distributions by Logger",
+         x = "Temperature (°C)",
+         y = "Density",
+         color = "Logger",
+         lty = "Type") +
+    theme_classic(base_size = 18) +
+    theme(legend.position = c(0.8, 0.8))
+
 
 # Check if the hourly_means dataframe has valid data
 print(hourly_means)
