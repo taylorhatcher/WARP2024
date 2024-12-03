@@ -10,16 +10,20 @@ library(lubridate)
 library(dplyr)
 library(tidyr)
 
+setwd("~/Desktop/Repos/WARP2024")
 # Load data using fread with fill = TRUE to handle mismatched columns
 hobo1data2024 <- fread('Hobo_1_2024field.csv', skip = 4, fill = TRUE, na.strings = c("Logged", "Series: T-Type"))
 hobo2data2024 <- fread('Hobo_2_2024field.csv', skip = 4, fill = TRUE, na.strings = c("Logged", "Series: T-Type"))
 hobo3data2024 <- fread('Hobo_3_2024field.csv', skip = 4, fill = TRUE, na.strings = c("Logged", "Series: T-Type"))
 
+# select only for columns with values-- thank you Julia
 hobo1data2024 <- hobo1data2024 %>%
   select("V1", "V2", "V3", "V4", "V5")
-# Exclude nas----n Julia's suggestion!!
-#dataframe <- dataframe%>% #
- # select() 
+hobo2data2024 <- hobo2data2024 %>%
+  select("V1", "V2", "V3", "V4", "V5")
+hobo3data2024 <- hobo3data2024 %>%
+  select("V1", "V2", "V3", "V4", "V5")
+
 # Rename the datetime column in each dataset
 setnames(hobo1data2024, old = "V1", new = "datetime")
 setnames(hobo2data2024, old = "V1", new = "datetime")
@@ -46,7 +50,7 @@ combined_loggers <- na.omit(combined_loggers, cols = "datetime")
 # Reshape the data to long format for plotting
 long_data <- melt(combined_loggers,
                   id.vars = "datetime",
-                  measure.vars = c("V2", "V3", "V4", "V5", "V6", "V7", "V8", "V9", "V10", "V11", "V12"),# copy and paste that into select
+                  measure.vars = c("V2.x", "V3.x", "V4.x", "V5.x", "V2.y", "V3.y", "V4.y", "V5.y", "V2", "V3", "V4", "V5"),# copy and paste that into select
                   variable.name = "Logger",
                   value.name = "Temperature")
 
@@ -55,7 +59,7 @@ long_data <- long_data %>%
   mutate(Logger = factor(Logger, labels = c("Logger 1 - Temp 1", "Logger 1 - Temp 2", "Logger 1 - Temp 3",
                                             "Logger 1 - Temp 4", "Logger 2 - Temp 1", "Logger 2 - Temp 2",
                                             "Logger 2 - Temp 3", "Logger 2 - Temp 4",
-                                            "Logger 3 - Temp 1", "Logger 3 - Temp 2", "Logger 3 - Temp 3")))
+                                            "Logger 3 - Temp 1", "Logger 3 - Temp 2", "Logger 3 - Temp 3", "Logger 3 - Temp 4")))
 # Check for any missing data in long_data
 table(is.na(long_data$Temperature))
 
