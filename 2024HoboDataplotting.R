@@ -11,10 +11,15 @@ library(dplyr)
 library(tidyr)
 
 # Load data using fread with fill = TRUE to handle mismatched columns
-hobo1data2024 <- fread('Hobo_1_2024field.csv', skip = 3, fill = TRUE, na.strings = c("Logged", "Series: T-Type"))
-hobo2data2024 <- fread('Hobo_2_2024field.csv', skip = 3, fill = TRUE, na.strings = c("Logged", "Series: T-Type"))
-hobo3data2024 <- fread('Hobo_3_2024field.csv', skip = 3, fill = TRUE, na.strings = c("Logged", "Series: T-Type"))
+hobo1data2024 <- fread('Hobo_1_2024field.csv', skip = 4, fill = TRUE, na.strings = c("Logged", "Series: T-Type"))
+hobo2data2024 <- fread('Hobo_2_2024field.csv', skip = 4, fill = TRUE, na.strings = c("Logged", "Series: T-Type"))
+hobo3data2024 <- fread('Hobo_3_2024field.csv', skip = 4, fill = TRUE, na.strings = c("Logged", "Series: T-Type"))
 
+hobo1data2024 <- hobo1data2024 %>%
+  select(datetime, V2, V3, V4, V5)
+# Exclude nas----n Julia's suggestion!!
+#dataframe <- dataframe%>% #
+ # select() 
 # Rename the datetime column in each dataset
 setnames(hobo1data2024, old = "V1", new = "datetime")
 setnames(hobo2data2024, old = "V1", new = "datetime")
@@ -34,13 +39,14 @@ hobo3data2024[, (2:5) := lapply(.SD, as.numeric), .SDcols = 2:5]
 combined_loggers <- merge(hobo1data2024, hobo2data2024, by = "datetime", all = TRUE)
 combined_loggers <- merge(combined_loggers, hobo3data2024, by = "datetime", all = TRUE)
 
+
 # Drop rows with NA in datetime or temperature columns
 combined_loggers <- na.omit(combined_loggers, cols = "datetime")
 
 # Reshape the data to long format for plotting
 long_data <- melt(combined_loggers,
                   id.vars = "datetime",
-                  measure.vars = c("V2", "V3", "V4", "V5", "V6", "V7", "V8", "V9", "V10", "V11", "V12"),
+                  measure.vars = c("V2", "V3", "V4", "V5", "V6", "V7", "V8", "V9", "V10", "V11", "V12"),# copy and paste that into select
                   variable.name = "Logger",
                   value.name = "Temperature")
 
@@ -75,7 +81,7 @@ long_data_filtered <- long_data %>%
   filter(!is.na(Temperature))
 
 # Calculate Min and Max temperatures for each logger
-temp_extremes <- filtered_data %>%
+temp_extremes <- long_data_filtered %>%
   group_by(Logger) %>%
   summarise(T_min = ifelse(all(is.na(Temperature)), NA, min(Temperature, na.rm = TRUE)),
             T_max = ifelse(all(is.na(Temperature)), NA, max(Temperature, na.rm = TRUE)),
@@ -137,3 +143,4 @@ ggplot(hourly_means, aes(x = DateTime, y = MeanTemperature, color = Logger)) +
        x = "Date and Time", y = "Mean Temperature (°C)", color = "Logger") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
