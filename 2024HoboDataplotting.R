@@ -16,7 +16,7 @@ hobo2data2024 <- fread('Hobo_2_2024field.csv', skip = 4, fill = TRUE, na.strings
 hobo3data2024 <- fread('Hobo_3_2024field.csv', skip = 4, fill = TRUE, na.strings = c("Logged", "Series: T-Type"))
 
 hobo1data2024 <- hobo1data2024 %>%
-  select(datetime, V2, V3, V4, V5)
+  select("V1", "V2", "V3", "V4", "V5")
 # Exclude nas----n Julia's suggestion!!
 #dataframe <- dataframe%>% #
  # select() 
