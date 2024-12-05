@@ -201,7 +201,7 @@ tpc2$instar=5
 
 tpc.p= rbind(tpc1, tpc2)
 
-tpc.p$rgr= (log(tpc.p$fw) - log(tpc.p$Mo))/tpc.p$time
+tpc.p$rgr= (log(tpc.p$fw) - log(tpc.p$Mo))/tpc.p$time ### ?!?!?! is this the correct way to calculate rgr?
 tpc.p$time.per= "past"
 
 tpc.ps= tpc.p[,c("UniID","mom","ID","temp","instar","time","duration","mgain","rgr","time.per")]
@@ -217,7 +217,7 @@ tpc.c = read.csv("2024PrapaeConstantTPCCombineddata.csv")
 # Convert fw to numeric and drop nas
 tpc.c$fw <- as.numeric(tpc.c$fw)
 
-tpc.c$rgr= (log(tpc.c$fw) - log(tpc.c$M0))/tpc.c$duration
+tpc.c$rgr= (log(tpc.c$fw) - log(tpc.c$M0))/tpc.c$duration #!!!!!!!!check duration if it is correct
 tpc.c$time.per= "current"
 
 tpc.c$mom= tpc.c$Female
