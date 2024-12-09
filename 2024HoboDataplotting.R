@@ -11,10 +11,10 @@ library(dplyr)
 library(tidyr)
 
 setwd("~/Desktop/Repos/WARP2024")
-# Load data using fread with fill = TRUE to handle mismatched columns
-hobo1data2024 <- fread('Hobo_1_2024field.csv', skip = 4, fill = TRUE, na.strings = c("Logged", "Series: T-Type"))
-hobo2data2024 <- fread('Hobo_2_2024field.csv', skip = 4, fill = TRUE, na.strings = c("Logged", "Series: T-Type"))
-hobo3data2024 <- fread('Hobo_3_2024field.csv', skip = 4, fill = TRUE, na.strings = c("Logged", "Series: T-Type"))
+# Load data using read.csv with fill = TRUE to handle mismatched columns
+hobo1data2024 <- read.csv('Hobo_1_2024field.csv', skip = 4, fill = TRUE, na.strings = c("Logged", "Series: T-Type"))
+hobo2data2024 <- read.csv('Hobo_2_2024field.csv', skip = 4, fill = TRUE, na.strings = c("Logged", "Series: T-Type"))
+hobo3data2024 <- read.csv('Hobo_3_2024field.csv', skip = 4, fill = TRUE, na.strings = c("Logged", "Series: T-Type"))
 
 # select only for columns with values-- thank you Julia
 hobo1data2024 <- hobo1data2024 %>%
@@ -76,7 +76,7 @@ filtered_data <- filtered_data %>%
   mutate(DateTime = floor_date(datetime, "hour")) %>%
   mutate(Temperature = as.numeric(Temperature))
 
-# Calculate hourly means for each logger
+# Calculate hourly means for each logger # code gets angry here for some reason
 hourly_means <- filtered_data %>%
   group_by(DateTime, Logger) %>%
   summarise(MeanTemperature = mean(Temperature, na.rm = TRUE), .groups = 'drop')
