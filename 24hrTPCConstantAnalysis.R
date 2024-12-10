@@ -1,5 +1,5 @@
 # ## Taylor M. Hatcher
-# ## Analysis of 6 hr and 24hr constant TPCs for P. rapae. Each caterpillar only experienced one temperature for 24 hours. 
+# ## Analysis of 6 hr and 24hr constant TPCs for P. rapae. Each caterpillar only experienced one temperature for 24 hours.
 # library(ggplot2)
 # library(data.table)
 # library(dplyr)
@@ -10,7 +10,7 @@
 # 
 # setwd("~/Desktop/Repos/WARP2024")
 # 
-# #past data 
+# #past data
 # tpc1 = read.csv("PrapaeW.1999.ConstantTempTPCs.4thinstar.jul2021.xlsx - data.csv")
 # tpc1$instar=4
 # 
@@ -65,21 +65,22 @@
 # tpc[tpc$time>20 & tpc$time<26 & tpc$time.per=="past","dur"]=24
 # tpc[tpc$time.per=="current","dur"]= tpc[tpc$time.per=="current","duration"]
 # 
-# #tpc.plot = ggplot(tpc[tpc$dur %in% c(6,24),], aes(x=temp, y=rgr, color=time.per)) +
-# # geom_point(alpha=0.5) +
-# #  facet_grid(dur ~ instar) +
-# #  theme_bw() +
-# # xlab("Temperature (C)") +
-# #  ylab("RGR (mg/mg/h)") +
-# #  ggtitle("2024") +
-# # ylim(-0.10, 0.14)
+# tpc.plot = ggplot(tpc[tpc$dur %in% c(6,24),], aes(x=temp, y=rgr, color=time.per)) +
+#  geom_point(alpha=0.5) +
+#   facet_grid(dur ~ instar) +
+#   theme_bw() +
+#  xlab("Temperature (C)") +
+#   ylab("RGR (mg/mg/h)") +
+#   ggtitle("2024") +
+#  ylim(-0.10, 0.14)
 # 
 # #Plot family mean values for constant tpc
-# #tpc.agg.f <- tpc %>% # new code added 11-22-24
-#   #group_by(mom, temp, duration, instar)%>% # new code added 11-22-24
-#  # dplyr::summarise(mean = mean(rgr, na.rm = TRUE), # new code added 11-22-24E)
-#  #                  se = sd(rgr, na.rm = TRUE) /sqrt(n())
-#   )# new code added 11-22-24
+# tpc.agg.f <- tpc %>% # new code added 11-22-24
+#   group_by(mom, temp, duration, instar)%>% # new code added 11-22-24
+#   dplyr::summarise(mean = mean(rgr, na.rm = TRUE), # new code added 11-22-24E)
+#                    se = sd(rgr, na.rm = TRUE) /sqrt(n())
+#   )
+# # new code added 11-22-24
 # # Aggregating by temperature, duration, and instar
 # # Aggregate mean values with corrected standard error calculation
 # tpc.agg <- tpc %>%
@@ -103,41 +104,39 @@
 #     data = tpc.agg[tpc.agg$dur %in% c(6, 24), ],
 #     aes(x = temp, ymin = mean - se, ymax = mean + se, color = time.per, group = time.per),
 #     width = 0.3, alpha = 0.6) +
-#   # ) +
-#   # # Line connecting family-level data
-#   # geom_line(
-#   #   data = tpc.agg.f,
-#   #   aes(x = temp, y = mean, group = mom),
-#   #   color = "black", linetype = "solid", size = 1
-#   # ) +
-#    # Layer for family-level aggregated data
+#    +
+#    # Line connecting family-level data
+#    geom_line(
+#      data = tpc.agg.f,
+#      aes(x = temp, y = mean, group = mom),
+#      color = "black", linetype = "solid", size = 1
+#    ) +
+#   # Layer for family-level aggregated data
 #    geom_point(
 #      data = tpc.agg.f,
 #      aes(x = temp, y = mean)) +
-#  #    color = "blue", size = 1, stroke = 1.2) +
-#   # geom_errorbar(
-#    #  data = tpc.agg.f,
-#    #  aes(x = temp, ymin = mean - se, ymax = mean + se, group = mom),
-#   # width = 0.3, color = "red", alpha = 0.7
-#   # ) +
+#  geom_errorbar(
+#      data = tpc.agg.f,
+#      aes(x = temp, ymin = mean - se, ymax = mean + se, group = mom),
+#    width = 0.3, color = "red", alpha = 0.7
+#    ) +
 #   facet_grid(dur ~ instar) + #facet by duration and instar
 #   theme_bw() +
 #   xlab("Temperature (°C") +
 #   ylab("RGR (mg/mg/hr)") +
 #   ggtitle("Past vs. Present Constant TPC with Family Means") +
 #   ylim(-0.10, 0.14)
-# 
-# 
+# print(tpc.plot)
 # #plotting family means with error bars
-# #   tpc.plot <- ggplot(tpc.agg[tpc.agg$dur %in% c(6, 24), ],aes(x = temp, y = mean, color = time.per, group = time.per)) +
-# #   geom_point(alpha = 0.7, size = 2) + # Points for mean values
-# #  geom_errorbar(aes(ymin = mean - se, ymax = mean +se), width = 0.3, alpha = 0.6) + # Error bars
-# #  facet_grid(dur ~ instar) + #Facets for duration and instar
-# #  theme_bw() +
-# #  xlab("Temperature(°C)") +
-# #  ylab("RGR (mg/mg/hr)") +
-# #  ggtitle("Past vs. Present Constant TPC")
-# # ylim(-0.10, 0.14)
+#    tpc.plot <- ggplot(tpc.agg[tpc.agg$dur %in% c(6, 24), ],aes(x = temp, y = mean, color = time.per, group = time.per)) +
+#    geom_point(alpha = 0.7, size = 2) + # Points for mean values
+#   geom_errorbar(aes(ymin = mean - se, ymax = mean +se), width = 0.3, alpha = 0.6) + # Error bars
+#   facet_grid(dur ~ instar) + #Facets for duration and instar
+#   theme_bw() +
+#   xlab("Temperature(°C)") +
+#   ylab("RGR (mg/mg/hr)") +
+#   ggtitle("Past vs. Present Constant TPC")
+# ylim(-0.10, 0.14)
 # 
 # 
 # 
@@ -175,12 +174,12 @@
 # tpc.all.plot= ggplot(tpc.agg.f.all, aes(x=temp,y=mean, col=factor(year)))+
 #   geom_line(aes(group=yrfemale)) +scale_color_viridis_d()
 # 
-# #add means
-# tpc.all.plot= tpc.all.plot + 
-#   geom_errorbar(data=tpc.agg.all, aes(x=temp, y=mean, ymin=mean-se, ymax=mean+se, col=factor(year)), width=0)+
-#   geom_point(data=tpc.agg.all, aes(x=temp, y = mean, col=factor(year)), size=3)+
-#   theme_bw()+xlab("Temperature (C)")+ylab("RGR (g/g/h)")+
-#   ggtitle("1999 & 2024") +ylim(-0.02,0.06) 
+# # #add means
+#  tpc.all.plot= tpc.all.plot + 
+#    geom_errorbar(data=tpc.agg.all, aes(x=temp, y=mean, ymin=mean-se, ymax=mean+se, col=factor(year)), width=0)+
+#    geom_point(data=tpc.agg.all, aes(x=temp, y = mean, col=factor(year)), size=3)+
+#    theme_bw()+xlab("Temperature (C)")+ylab("RGR (g/g/h)")+
+#    ggtitle("1999 & 2024") +ylim(-0.02,0.06) 
 
 library(ggplot2)
 library(data.table)
@@ -243,14 +242,17 @@ tpc[tpc$time>5 & tpc$time<6.5 & tpc$time.per=="past","dur"]=6
 tpc[tpc$time>20 & tpc$time<26 & tpc$time.per=="past","dur"]=24
 tpc[tpc$time.per=="current","dur"]= tpc[tpc$time.per=="current","duration"]
 
-tpc.plot = ggplot(tpc[tpc$dur %in% c(6,24),], aes(x=temp, y=rgr, color=time.per)) +
+tpc.plot <- ggplot(tpc[tpc$dur %in% c(6,24),], aes(x=temp, y=rgr, color=time.per)) +
   geom_point(alpha=0.5) +
+  geom_line(aes(group = mom, color = time.per), alpha = 0.7) + # lineage lines
   facet_grid(dur ~ instar) +
   theme_bw() +
   xlab("Temperature (C)") +
   ylab("RGR (mg/mg/h)") +
-  ggtitle("2024") +
-  ylim(-0.02, 0.14)
+  ggtitle("2024 vs. 1999 Constant TPC") +
+  ylim(-0.02, 0.14)+
+scale_color_manual(values = c("current" = "#EE6A50", "past" = "#7AC5CD"))
+print(tpc.plot)
 
 # Aggregate mean values with corrected standard error calculation
 tpc.agg <- tpc %>%
@@ -259,22 +261,24 @@ tpc.agg <- tpc %>%
     mean = mean(rgr, na.rm = TRUE),
     se = sd(rgr, na.rm = TRUE) / sqrt(n())
   )
-# #plotting family means with error bars
-#  tpc.plot <- ggplot(tpc.agg[tpc.agg$dur %in% c(6, 24), ],aes(x = temp, y = mean, color = time.per, group = time.per)) +
-#    geom_point(alpha = 0.7, size = 2) + # Points for mean values
-#  geom_errorbar(aes(ymin = mean - se, ymax = mean +se), width = 0.3, alpha = 0.6) + # Error bars
-# facet_grid(dur ~ instar) + #Facets for duration and instar
-#   theme_bw() +
-#   xlab("Temperature(°C)") +
-#   ylab("RGR (mg/mg/hr)") +
-#   ggtitle("Past vs. Present Constant TPC")
-#  ylim(-0.10, 0.14)
+ #plotting family means with error bars
+  tpc.plot <- ggplot(tpc.agg[tpc.agg$dur %in% c(6, 24), ],aes(x = temp, y = mean, color = time.per, group = time.per)) +
+    geom_point(alpha = 0.7, size = 2) + # Points for mean values
+  geom_errorbar(aes(ymin = mean - se, ymax = mean +se), width = 0.3, alpha = 0.6) + # Error bars
+ facet_grid(dur ~ instar) + #Facets for duration and instar
+   theme_bw() +
+   xlab("Temperature(°C)") +
+   ylab("RGR (mg/mg/hr)") +
+   ggtitle("Past vs. Present Constant TPC")
+  ylim(-0.10, 0.14)
 
 tpc$time.per <- factor(tpc$time.per, levels = c("past", "current"))
 print(tpc.plot)
+
+
 #plot family mean values 
 tpc.agg.f <- tpc %>%
-  group_by(FEMALE, temp) %>%
-  dplyr::summarise(mean = mean(value, na.rm = TRUE),
-                   se = sd(value, na.rm = TRUE)/length(value))
+  group_by(mom) %>%
+dplyr::summarise(rgr, na.rm=TRUE) 
+ 
 
