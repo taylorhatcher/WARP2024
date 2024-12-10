@@ -198,6 +198,10 @@ tpc2 = read.csv("PrapaeW.1999.ConstantTempTPCs.5thinstar.jul2021.xlsx - data.csv
 names(tpc2)=names(tpc1)
 tpc2$instar=5
 
+#tpc3 = read.csv("Prapae.WAonly.csv")
+#tpc3$instar=4
+# this section of code is me trying to add in the data set for TRN for leaf but they aren't named similarly so I can't rbind them
+
 tpc.p= rbind(tpc1, tpc2)
 
 tpc.p$rgr= (log(tpc.p$fw) - log(tpc.p$Mo))/tpc.p$time ### ?!?!?! is this the correct way to calculate rgr?
