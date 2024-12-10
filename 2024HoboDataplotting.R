@@ -11,10 +11,10 @@ library(dplyr)
 library(tidyr)
 
 setwd("~/Desktop/Repos/WARP2024")
-# Load data using read.csv with fill = TRUE to handle mismatched columns
-hobo1data2024 <- read.csv('Hobo_1_2024field.csv', skip = 4, fill = TRUE, na.strings = c("Logged", "Series: T-Type"))
-hobo2data2024 <- read.csv('Hobo_2_2024field.csv', skip = 4, fill = TRUE, na.strings = c("Logged", "Series: T-Type"))
-hobo3data2024 <- read.csv('Hobo_3_2024field.csv', skip = 4, fill = TRUE, na.strings = c("Logged", "Series: T-Type"))
+# Load data using fread with fill = TRUE to handle mismatched columns
+hobo1data2024 <- fread('Hobo_1_2024field.csv', skip = 4, fill = TRUE, na.strings = c("Logged", "Series: T-Type"))
+hobo2data2024 <- fread('Hobo_2_2024field.csv', skip = 4, fill = TRUE, na.strings = c("Logged", "Series: T-Type"))
+hobo3data2024 <- fread('Hobo_3_2024field.csv', skip = 4, fill = TRUE, na.strings = c("Logged", "Series: T-Type"))
 
 # select only for columns with values-- thank you Julia
 hobo1data2024 <- hobo1data2024 %>%
@@ -102,7 +102,7 @@ missing_data_per_logger <- long_data %>%
 print(missing_data_per_logger)
 
 # plotting the Temperature Distributions- Make sure that all loggers are represented
-ggplot(long_data_filtered, aes(x = Temperature, color = Logger)) +
+tempdisgraph <- ggplot(long_data_filtered, aes(x = Temperature, color = Logger)) +
   geom_density(size = 1) +
   scale_color_viridis_d() +
   labs(
@@ -113,9 +113,9 @@ ggplot(long_data_filtered, aes(x = Temperature, color = Logger)) +
   )
 theme_classic(base_size = 18) +
   theme(legend.position = c(0.8, 0.8))
-
+print(tempdisgraph)
 # Min and Max Temperature Plot (Bar Plot)
-ggplot(temp_extremes_long, aes(x = Logger, y = Temperature, fill = Temperature_Type)) +
+minmaxplot <- ggplot(temp_extremes_long, aes(x = Logger, y = Temperature, fill = Temperature_Type)) +
   geom_bar(stat = "identity", position = position_dodge()) +
   scale_fill_viridis_d() +
   labs(
@@ -126,9 +126,9 @@ ggplot(temp_extremes_long, aes(x = Logger, y = Temperature, fill = Temperature_T
   ) +
   theme_classic(base_size = 16) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
+print(minmaxplot)
 # Density Plot for Full Dataset (Temperature Distributions)
-ggplot(filtered_data, aes(x = Temperature, color = Logger)) +
+tempdensplot <- ggplot(filtered_data, aes(x = Temperature, color = Logger)) +
   geom_density(size = 1) +
   scale_color_viridis_d() +
   labs(
@@ -139,12 +139,14 @@ ggplot(filtered_data, aes(x = Temperature, color = Logger)) +
   ) +
   theme_classic(base_size = 18) +
   theme(legend.position = c(0.8, 0.8))
-
-# Plot the hourly mean temperature data
-ggplot(hourly_means, aes(x = DateTime, y = MeanTemperature, color = Logger)) +
+print(tempdensplot)
+#Plot the hourly mean temperature data
+hourlymeanplot <- ggplot(hourly_means, aes(x = DateTime, y = MeanTemperature, color = Logger)) +
   geom_line(size = 1) +
   labs(title = "Hourly Mean Temperature from Multiple Loggers (June 22 - August 15, 2024)",
        x = "Date and Time", y = "Mean Temperature (°C)", color = "Logger") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+print(hourlymeanplot)
+
 
