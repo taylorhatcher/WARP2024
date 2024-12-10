@@ -64,7 +64,7 @@ tpc.cs= tpc.c[,c("UniID","mom","ID","temp","instar","time","duration","mgain","r
 tpc= rbind(tpc.cs, tpc.ps)
 
 
-######Plot
+###Plot
 
 ##Set up durations of 6hr and 24hr
 
