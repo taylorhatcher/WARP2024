@@ -36,7 +36,7 @@ tpc.ps= tpc.p[,c("UniID","mom","ID","temp","instar","time","duration","mgain","r
 
 # #plot densities for what time they did weighings in the past
 # ggplot(tpc.ps[tpc.ps$time>5 & tpc.ps$time<6.5,], aes(x=time, color=factor(instar), group=factor(instar)))+
-#   geom_density()
+# geom_density()
 # table(tpc.ps$time, tpc.ps$instar)
 
 # load in recent 2024 TPC data
