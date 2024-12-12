@@ -149,9 +149,10 @@ tpc.plot <- ggplot(tpc.agg[tpc.agg$dur %in% c(6, 24), ],aes(x = temp, y = mean, 
   theme_bw() +
   xlab("Temperature(°C)") +
   ylab("RGR (mg/mg/hr)") +
-  ggtitle("Past vs. Present Constant TPC")
-  ylim(-0.10, 0.14)
-  tpc$time.per <- factor(tpc$time.per, levels = c("past", "current"))
+  ggtitle("Past vs. Present Constant TPC") +
+  ylim(-0.10, 0.14) +
+  scale_color_manual(values = c("current" = "#EE6A50", "past" = "#7AC5CD"))
+  #tpc$time.per <- factor(tpc$time.per, levels = c("past", "current")) 
   print(tpc.plot)
   setwd('/Volumes/GoogleDrive/Shared drives/TrEnCh/Projects/WARP/Analyses/figures/')
   pdf("2024ConstantTPCFamilyMeans")
