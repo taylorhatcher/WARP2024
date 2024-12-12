@@ -90,9 +90,13 @@ past_plot <- ggplot(tpc_past[tpc_past$dur %in% c(6, 24),], aes(x = temp, y = rgr
   ggtitle("Historic Data (1999)") +
   scale_color_viridis(discrete = TRUE, option = "C")
 print(past_plot)
+setwd('/Volumes/GoogleDrive/Shared drives/TrEnCh/Projects/WARP/Analyses/figures/')
+pdf("24hrTPCConstantHistoricData")
 
 # Filter data for current data set
 tpc_current <- tpc %>% filter(time.per == "current")
+past_plot
+dev.off()
 
 # Create the plot for current data
 current_plot <- ggplot(tpc_current[tpc_current$duration %in% c(6,24),], aes( x = temp, y = rgr, color = mom)) +
@@ -106,6 +110,10 @@ current_plot <- ggplot(tpc_current[tpc_current$duration %in% c(6,24),], aes( x =
   ylim(-0.02, 0.14) +
   scale_color_viridis(discrete = TRUE)
 print(current_plot)
+setwd('/Volumes/GoogleDrive/Shared drives/TrEnCh/Projects/WARP/Analyses/figures/')
+pdf("2024_24hrTPCConstantCurrentData")
+current_plot
+dev.off()
 
 #combine both individual plots for past and current data
 combined_plot <- past_plot + current_plot + plot_layout(ncol = 1)
@@ -121,6 +129,10 @@ tpc.plot <- ggplot(tpc[tpc$dur %in% c(6,24),], aes(x=temp, y=rgr, color=time.per
   ylim(-0.02, 0.14)+
   scale_color_manual(values = c("current" = "#EE6A50", "past" = "#7AC5CD"))
 print(tpc.plot)
+setwd('/Volumes/GoogleDrive/Shared drives/TrEnCh/Projects/WARP/Analyses/figures/')
+pdf("2024ConstantTPCComparison")
+combined_plot
+dev.off()
 
 # Aggregate mean values with corrected standard error calculation
 tpc.agg <- tpc %>%
@@ -138,11 +150,13 @@ tpc.plot <- ggplot(tpc.agg[tpc.agg$dur %in% c(6, 24), ],aes(x = temp, y = mean, 
   xlab("Temperature(°C)") +
   ylab("RGR (mg/mg/hr)") +
   ggtitle("Past vs. Present Constant TPC")
-ylim(-0.10, 0.14)
-
-tpc$time.per <- factor(tpc$time.per, levels = c("past", "current"))
-print(tpc.plot)
-
+  ylim(-0.10, 0.14)
+  tpc$time.per <- factor(tpc$time.per, levels = c("past", "current"))
+  print(tpc.plot)
+  setwd('/Volumes/GoogleDrive/Shared drives/TrEnCh/Projects/WARP/Analyses/figures/')
+  pdf("2024ConstantTPCFamilyMeans")
+  tpc.plot
+  dev.off()
 
 #plot family mean values 
 tpc.agg.f <- tpc %>%
