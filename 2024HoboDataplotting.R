@@ -1,7 +1,6 @@
 # Plotting operative model temperatures from 2024 field season
 # Taylor M. Hatcher
 #
-# This is a test
 
 # Load required libraries
 library(data.table)
