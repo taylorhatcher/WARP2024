@@ -1,9 +1,22 @@
 # # # Plotting 2024 Weather Station Data
 # Reading in data
-WeatherData <- read.csv("(Edited) Weather Station Field Data.csv")
+# Jared K. Haar
+#
+#
+#
+# library (ggplot2)
+# library (tidyverse)
+# library (dplyr)
+
+# handling blank rows after column headers
+headers = read.csv("(Partially Edited) Weather Station Field Data.csv", header = FALSE, nrows = 1, as.is = TRUE)
+# Load weather data 
+WeatherData <- read.csv("(Partially Edited) Weather Station Field Data.csv", skip = 4, header = FALSE)
+
+colnames(WeatherData) = headers
 
 # Renaming columns
-WeatherData <- WeatherData %>% rename(DateTime = 'Date.Time')
+WeatherData <- WeatherData %>% rename(DateTime = 'Date Time')
 WeatherData <- WeatherData %>% rename(Solar = 'Ch2')
 WeatherData <- WeatherData %>% rename(GroundTemp = 'Ch4')
 WeatherData <- WeatherData %>% rename(AirTemp = 'Ch5')
@@ -69,3 +82,4 @@ minmaxplot <- ggplot(temp_extremes_long, aes(x = temp, y = Temperature, fill = T
   theme_classic(base_size = 16) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 print(minmaxplot)
+
