@@ -18,14 +18,20 @@ library(readxl)
 # set working directory to github repository
 setwd("~/Desktop/Repos/WARP2024")
 
-#Load data
-histmicroclimdata <- read_xlsx(path = "UWCUH.MetData.Seln2.Aug1999.jdatecorrected.Taylorsversion.xlsx")
+#Load data and exclude the first rows but keep header names
+Colnames <- as.character(read_xlsx("UWCUH.MetData.Seln2.Aug1999.jdatecorrected.Taylorsversion.xlsx", n_max = 1, col_names = FALSE))
+histmicroclimdata <- read_xlsx(path = "UWCUH.MetData.Seln2.Aug1999.jdatecorrected.Taylorsversion.xlsx", skip = 7, col_names = Colnames)
 
-# Convert LONGTIME to a proper datetime format if needed
+# Convert LONGTIME to a proper datetime format 
 histmicroclimdata$LONGTIME <- as.POSIXct(histmicroclimdata$LONGTIME, format = "%Y-%m-%d %H:%M:%S")
 
 # Extract only the time in HH:MM format
 histmicroclimdata$LONGTIME <- format(histmicroclimdata$LONGTIME, "%H:%M")
 
-# Check the results
-head(histmicroclimdata$LONGTIME)
+# Combine DATE and LONGTIME into a single datetime column
+histmicroclimdata <- histmicroclimdata %>%
+  mutate(
+    DATETIME = paste(DATE, LONGTIME),        # Combine DATE and LONGTIME
+    DATETIME = ymd_hm(DATETIME)             # Parse combined column as datetime
+  )
+
