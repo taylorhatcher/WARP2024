@@ -35,3 +35,7 @@ histmicroclimdata <- histmicroclimdata %>%
     DATETIME = ymd_hm(DATETIME)             # Parse combined column as datetime
   )
 
+TemperaturePlot <- ggplot(histmicroclimdata, aes(x = DATETIME, y = TM1)) +
+  geom_point(data=histmicroclimdata, stat="identity", position="identity", aes(color = as.factor(TM1))) +
+  labs(title = "2024 Atmospheric Science UW farm Wstation Temperature")
+print(TemperaturePlot)
