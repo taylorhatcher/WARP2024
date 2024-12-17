@@ -26,6 +26,7 @@ histmicroclimdata <- read_xlsx(path = "UWCUH.MetData.Seln2.Aug1999.jdatecorrecte
 # Select for columns needed for analysis - excluding TM13 because logger seems to have been malfunctioning during recording time
 histmicroclimdata <- histmicroclimdata %>%
   select("YEAR", "SITE","DATE", "JDATE", "LONGTIME", "TIME", "SOLAR", "TAIR","TM1","TM2","TM3","TM4","TM5","TM6","TM7","TM8","TM9","TM10","TM11","TM12","TM14","TM15","TM16","TM17","TM18","TM19","TM20")
+
 # Convert LONGTIME to a proper datetime format 
 histmicroclimdata$LONGTIME <- as.POSIXct(histmicroclimdata$LONGTIME, format = "%Y-%m-%d %H:%M:%S")
 
@@ -48,7 +49,6 @@ histmicroclimdata_long <- histmicroclimdata %>%
   )
 
 # Plot all TM columns as separate lines
-
 TemperaturePlot <- ggplot(histmicroclimdata_long, aes(x = DATETIME, y = Value, color = Variable)) +
   geom_point() +
   scale_color_viridis_d()+
@@ -63,7 +63,6 @@ TemperaturePlot <- ggplot(histmicroclimdata_long, aes(x = DATETIME, y = Value, c
 #print plot
   print(TemperaturePlot)
 
-
 # Calculate temp extremes for data frame
   temp_extremes <- histmicroclimdata_long %>%
     group_by(Variable) %>%
@@ -71,11 +70,11 @@ TemperaturePlot <- ggplot(histmicroclimdata_long, aes(x = DATETIME, y = Value, c
               T_max = max(Value, na.rm = TRUE),
               .groups = 'drop')
   
-  # Reshape the temp_extremes data into long format for plotting
+# Reshape the temp_extremes data into long format for plotting
   temp_extremes_long <- temp_extremes %>%
     pivot_longer(cols = c(T_min, T_max), names_to = "Temperature_Type", values_to = "Temperature")
-  
-# Min and Max distribution plot 
+
+# Min and Max distribution plot for each temperature logger
 histminmaxplot <- ggplot(temp_extremes_long, aes(x = Variable, y = Temperature, fill = Temperature_Type)) +
     geom_bar(stat = "identity", position = position_dodge()) +
     scale_fill_viridis_d() +
@@ -88,3 +87,33 @@ histminmaxplot <- ggplot(temp_extremes_long, aes(x = Variable, y = Temperature, 
     theme_classic(base_size = 16) +
     theme(axis.text.x = element_text(angle = 45, hjust = 1))
   print(histminmaxplot)
+  
+  # Combine DATE and LONGTIME into a single datetime column
+  histhourly_means <- histmicroclimdata_long %>%
+    mutate(HourlyTime = floor_date(DATETIME, "hour")) %>%
+    group_by(HourlyTime, Variable) %>%
+    summarise(MeanTemperature = mean(Value, na.rm = TRUE),
+              .groups = 'drop')
+  # Calculate hourly means for each temperature logger
+  histhourly_means <- histmicroclimdata_long %>%
+    mutate(HourlyTime = floor_date(DATETIME, "hour")) %>% # Round datetime to the nearest hour
+    group_by(HourlyTime, Variable) %>%                   # Group by rounded hour and logger
+    summarise(MeanTemperature = mean(Value, na.rm = TRUE), .groups = 'drop') # Calculate mean
+  
+  # Plot hourly means for each logger
+  hourly_plot <- ggplot(histhourly_means, aes(x = HourlyTime, y = MeanTemperature, color = Variable)) +
+    geom_line() +                                         # Use line plot to show trends
+    scale_color_viridis_d() +                            # Use a colorblind-friendly palette
+    labs(
+      title = "1999 Field Seln Hourly Mean Temperatures by Logger",
+      x = "Datetime",
+      y = "Mean Temperature (°C)",
+      color = "Sensor"
+    ) +
+    theme_minimal() +                                    # Clean plot style
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1)  # Rotate x-axis labels for better readability
+    )
+  
+  # Print the plot
+  print(hourly_plot)
