@@ -6,6 +6,7 @@
 #
 # install required packages
 install.packages("readxl")
+
 # Load required libraries
 library(data.table)
 library(ggplot2)
@@ -14,7 +15,6 @@ library(dplyr)
 library(tidyr)
 library(readxl)
 library(viridis)
-
 
 # set working directory to github repository
 setwd("~/Desktop/Repos/WARP2024")
@@ -88,32 +88,32 @@ histminmaxplot <- ggplot(temp_extremes_long, aes(x = Variable, y = Temperature, 
     theme(axis.text.x = element_text(angle = 45, hjust = 1))
   print(histminmaxplot)
   
-  # Combine DATE and LONGTIME into a single datetime column
+# Combine DATE and LONGTIME into a single datetime column
   histhourly_means <- histmicroclimdata_long %>%
     mutate(HourlyTime = floor_date(DATETIME, "hour")) %>%
     group_by(HourlyTime, Variable) %>%
     summarise(MeanTemperature = mean(Value, na.rm = TRUE),
               .groups = 'drop')
-  # Calculate hourly means for each temperature logger
+# Calculate hourly means for each temperature logger
   histhourly_means <- histmicroclimdata_long %>%
     mutate(HourlyTime = floor_date(DATETIME, "hour")) %>% # Round datetime to the nearest hour
     group_by(HourlyTime, Variable) %>%                   # Group by rounded hour and logger
     summarise(MeanTemperature = mean(Value, na.rm = TRUE), .groups = 'drop') # Calculate mean
   
-  # Plot hourly means for each logger
+# Plot hourly means for each logger
   hourly_plot <- ggplot(histhourly_means, aes(x = HourlyTime, y = MeanTemperature, color = Variable)) +
-    geom_line() +                                         # Use line plot to show trends
-    scale_color_viridis_d() +                            # Use a colorblind-friendly palette
+    geom_line() + # Use line plot to show trends
+    scale_color_viridis_d() + # Use a colorblind-friendly palette
     labs(
       title = "1999 Field Seln Hourly Mean Temperatures by Logger",
       x = "Datetime",
       y = "Mean Temperature (°C)",
       color = "Sensor"
     ) +
-    theme_minimal() +                                    # Clean plot style
+    theme_minimal() + # Clean plot style
     theme(
       axis.text.x = element_text(angle = 45, hjust = 1)  # Rotate x-axis labels for better readability
     )
   
-  # Print the plot
+# Print the plot
   print(hourly_plot)
