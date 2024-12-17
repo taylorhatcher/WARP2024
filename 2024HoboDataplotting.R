@@ -105,7 +105,7 @@ tempdisgraph <- ggplot(long_data_filtered, aes(x = Temperature, color = Logger))
   geom_density(size = 1) +
   scale_color_viridis_d() +
   labs(
-    title = "Temperature Distribution by Logger",
+    title = "2024 Temperature Distribution by Logger",
     x = "Temperature (°C)",
     y = "Density",
     color = "Logger"
@@ -118,7 +118,7 @@ minmaxplot <- ggplot(temp_extremes_long, aes(x = Logger, y = Temperature, fill =
   geom_bar(stat = "identity", position = position_dodge()) +
   scale_fill_viridis_d() +
   labs(
-    title = "Minimum and Maximum Temperatures by Logger",
+    title = " 2024 Minimum and Maximum Temperatures by Logger",
     x = "Logger",
     y = "Temperature (°C)",
     fill = "Temperature Type"
