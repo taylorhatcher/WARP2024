@@ -47,7 +47,7 @@ hourly_means <- atmosphericdata %>%
   ungroup()
 print(hourly_means)
 
-# Plot daily hourl mean temperatures
+# Plot daily hourly mean temperatures
 
 hourlymeanplot <- ggplot(hourly_means, aes(x = date, y = MeanTemperature)) +
   geom_line(size = 1) +
