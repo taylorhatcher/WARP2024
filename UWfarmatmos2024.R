@@ -29,7 +29,8 @@ print(SolarPlot)
 WindSpeedPlot <- ggplot(atmosphericdata, aes(x = datetime, y = Speed)) +
   geom_line(data=atmosphericdata, stat = "identity", position="identity") +
   labs(title = "2024 Atmospheric Science UW farm WStation Wind speed")
-print(WindSpeed)
+print(WindSpeedPlot)
+
 
 atmosphericdata <- atmosphericdata %>%
   mutate(Temperature = ifelse(is.na(as.numeric(as.character(Temperature))), NA, as.numeric(as.character(Temperature))))
@@ -59,7 +60,7 @@ print(hourlymeanplot)
 # Plot temperature data
 
 TemperaturePlot <- ggplot(atmosphericdata, aes(x = datetime, y = Temperature)) +
-  geom_point(data=atmosphericdata, stat="identity", position="identity", aes(color = as.factor(Temperature))) +
+  geom_line() +
   labs(title = "2024 Atmospheric Science UW farm Wstation Temperature")
 print(TemperaturePlot)
 
