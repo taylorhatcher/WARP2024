@@ -10,7 +10,8 @@ library(dplyr)
 library(tidyr)
 
 setwd("~/Desktop/Repos/WARP2024")
-# Load data using fread with fill = TRUE to handle mismatched columns
+
+# Load data using fread with fill = TRUE to handle mismatched columns, I am using fread becasue I was having issues with loading my data with read.csv for some reason - researched it and came to the conclusion that fread could handle this large data set faster than csv() or read.csv()
 hobo1data2024 <-
   fread(
     'Hobo_1_2024field.csv',
@@ -46,7 +47,7 @@ setnames(hobo1data2024, old = "V1", new = "datetime")
 setnames(hobo2data2024, old = "V1", new = "datetime")
 setnames(hobo3data2024, old = "V1", new = "datetime")
 
-# Convert the datetime column to a proper date-time object
+# Convert the datetime column to a workable date-time object
 hobo1data2024[, datetime := mdy_hms(datetime)]
 hobo2data2024[, datetime := mdy_hms(datetime)]
 hobo3data2024[, datetime := mdy_hms(datetime)]
@@ -56,7 +57,7 @@ hobo1data2024[, (2:5) := lapply(.SD, as.numeric), .SDcols = 2:5]
 hobo2data2024[, (2:5) := lapply(.SD, as.numeric), .SDcols = 2:5]
 hobo3data2024[, (2:5) := lapply(.SD, as.numeric), .SDcols = 2:5]
 
-# Merge datasets by datetime
+# Merge datasets by datetime for all hobo loggers - can only merge two at a time so I merged first two and then the last with the merged 
 combined_loggers <-
   merge(hobo1data2024, hobo2data2024, by = "datetime", all = TRUE)
 combined_loggers <-
@@ -66,7 +67,7 @@ combined_loggers <-
         all = TRUE)
 
 
-# Drop rows with NA in datetime or temperature columns
+# Drop rows with NA in datetime or temperature columns -- lots of NAs
 combined_loggers <- na.omit(combined_loggers, cols = "datetime")
 
 # Reshape the data to long format for plotting
@@ -98,18 +99,18 @@ long_data <- long_data %>%
   mutate(Logger = factor(
     Logger,
     labels = c(
-      "Logger 1 - Temp 1",
-      "Logger 1 - Temp 2",
-      "Logger 1 - Temp 3",
-      "Logger 1 - Temp 4",
-      "Logger 2 - Temp 1",
-      "Logger 2 - Temp 2",
-      "Logger 2 - Temp 3",
-      "Logger 2 - Temp 4",
-      "Logger 3 - Temp 1",
-      "Logger 3 - Temp 2",
-      "Logger 3 - Temp 3",
-      "Logger 3 - Temp 4"
+      "HOBO Logger 1 - Temp 1",
+      "HOBO Logger 1 - Temp 2",
+      "HOBO Logger 1 - Temp 3",
+      "HOBO Logger 1 - Temp 4",
+      "HOBO Logger 2 - Temp 1",
+      "HOBO Logger 2 - Temp 2",
+      "HOBO Logger 2 - Temp 3",
+      "HOBO Logger 2 - Temp 4",
+      "HOBO Logger 3 - Temp 1",
+      "HOBO Logger 3 - Temp 2",
+      "HOBO Logger 3 - Temp 3",
+      "HOBO Logger 3 - Temp 4 - Shaded Air Temperature"
     )
   ))
 
@@ -127,7 +128,7 @@ filtered_data <- long_data %>%
 
 # Convert datetime to hourly granularity
 filtered_data <- filtered_data %>%
-  mutate(DateTime = floor_date(datetime, "hour")) %>%
+  mutate(DateTime = floor_date(datetime, "hour")) %>% # floor_date filters to the hour and ignores the seconds which aren't useful 
   mutate(Temperature = as.numeric(Temperature))
 
 # Calculate hourly means for each logger # code gets angry here for some reason
@@ -156,7 +157,7 @@ temp_extremes_long <- temp_extremes %>%
     values_to = "Temperature"
   )
 
-# Check how many missing values per logger
+# Check how many missing values per logger - there are a lot of nas because loggers were not in sync
 missing_data_per_logger <- long_data %>%
   group_by(Logger) %>%
   summarise(MissingCount = sum(is.na(Temperature)))
