@@ -1,6 +1,8 @@
 # Taylor M. Hatcher
 # 24 Hr Constant TPC Analysis for P.rapae
+# This analysis compares historical constant feeding relative growth rates at 6hr and 24hr at a constant temperature
 
+# Load required libraries 
 library(ggplot2)
 library(data.table)
 library(dplyr)
@@ -14,11 +16,11 @@ setwd("~/Desktop/Repos/WARP2024")
 
 # read in past data 
 tpc1 = read.csv("PrapaeW.1999.ConstantTempTPCs.4thinstar.jul2021.xlsx - data.csv")
-tpc1$instar=4
+tpc1$instar=4 # identify instar
 
 tpc2 = read.csv("PrapaeW.1999.ConstantTempTPCs.5thinstar.jul2021.xlsx - data.csv")
 names(tpc2)=names(tpc1)
-tpc2$instar=5
+tpc2$instar=5 # identify instar
 
 #tpc3 = read.csv("Prapae.WAonly.csv")
 #tpc3$instar=4
@@ -27,9 +29,9 @@ tpc2$instar=5
 # combine past data sets using rbind
 tpc.p= rbind(tpc1, tpc2)
 
-# calculate relative growth rate for past data set
+# calculate relative growth rate for 1999 past data set
 tpc.p$rgr= (log(tpc.p$fw) - log(tpc.p$Mo))/tpc.p$time ### ?!?!?! is this the correct way to calculate rgr?
-tpc.p$time.per= "past"
+tpc.p$time.per= "past" # labels this data as past data set 
 
 # ensure column names match current data column names
 tpc.ps= tpc.p[,c("UniID","mom","ID","temp","instar","time","duration","mgain","rgr","time.per")]
@@ -39,17 +41,17 @@ tpc.ps= tpc.p[,c("UniID","mom","ID","temp","instar","time","duration","mgain","r
 # geom_density()
 # table(tpc.ps$time, tpc.ps$instar)
 
-# load in recent 2024 TPC data
+# load in recent 2024  Constant TPC data
 tpc.c = read.csv("2024PrapaeConstantTPCCombineddata.csv")
 
-# Convert fw to numeric and drop nas
+# Convert final weight column to numeric and drop nas
 tpc.c$fw <- as.numeric(tpc.c$fw)
 
-# calculate relative growth rate for current data set
-tpc.c$rgr= (log(tpc.c$fw) - log(tpc.c$M0))/tpc.c$duration #!!!!!!!!check duration if it is correct
+# calculate relative growth rate for current 2024 data set
+tpc.c$rgr= (log(tpc.c$fw) - log(tpc.c$M0))/tpc.c$duration #!!!!!!!!check duration if it is correct --- note to self on 12/19/24 - should I calculate actual durations like joel did? May be why my error bars are so small
 tpc.c$time.per= "current"
 
-# ensure naming matches old data sets
+# Make sure that new data follows naming of old data sets
 tpc.c$mom= tpc.c$Female
 tpc.c$ID= tpc.c$Individual
 tpc.c$UniID= paste(tpc.c$temp, tpc.c$mom, tpc.c$ID, sep=".")
@@ -134,9 +136,9 @@ pdf("2024ConstantTPCComparison")
 combined_plot
 dev.off()
 
-# Aggregate mean values with corrected standard error calculation
+# Aggregate mean values with standard error calculation
 tpc.agg <- tpc %>%
-  group_by(temp, time.per, dur, instar) %>%
+  group_by(temp, time.per, dur, instar) %>% # need to actually calculate the precise durations and not just a flat 6 hr and 24 hr durations for the present data set
   dplyr::summarise(
     mean = mean(rgr, na.rm = TRUE),
     se = sd(rgr, na.rm = TRUE) / sqrt(n())
