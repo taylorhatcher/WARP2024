@@ -49,7 +49,7 @@ histmicroclimdata_long <- histmicroclimdata %>%
   )
 
 # Plot all TM columns as separate lines
-TemperaturePlot <- ggplot(histmicroclimdata_long, aes(x = DATETIME, y = Value, color = Variable)) +
+AllTemperaturePlot <- ggplot(histmicroclimdata_long, aes(x = DATETIME, y = Value, color = Variable)) +
   geom_point() +
   scale_color_viridis_d()+
   labs(
@@ -60,8 +60,8 @@ TemperaturePlot <- ggplot(histmicroclimdata_long, aes(x = DATETIME, y = Value, c
   ) +
   theme_minimal()
 
-#print plot
-  print(TemperaturePlot)
+#print Temperature plot plot
+  print(AllTemperaturePlot)
 
 # Calculate temp extremes for data frame
   temp_extremes <- histmicroclimdata_long %>%
@@ -100,10 +100,10 @@ histminmaxplot <- ggplot(temp_extremes_long, aes(x = Variable, y = Temperature, 
     group_by(HourlyTime, Variable) %>%                   # Group by rounded hour and logger
     summarise(MeanTemperature = mean(Value, na.rm = TRUE), .groups = 'drop') # Calculate mean
   
-# Plot hourly means for each logger
+# Plot hourly means for each temperature logger in the field
   hourly_plot <- ggplot(histhourly_means, aes(x = HourlyTime, y = MeanTemperature, color = Variable)) +
     geom_line() + # Use line plot to show trends
-    scale_color_viridis_d() + # Use a colorblind-friendly palette
+    scale_color_viridis_d() + 
     labs(
       title = "1999 Field Seln Hourly Mean Temperatures by Logger",
       x = "Datetime",
@@ -115,7 +115,7 @@ histminmaxplot <- ggplot(temp_extremes_long, aes(x = Variable, y = Temperature, 
       axis.text.x = element_text(angle = 45, hjust = 1)  # Rotate x-axis labels for better readability
     )
   
-# Print the plot
+# Print the hourly data plot
   print(hourly_plot)
 
   
