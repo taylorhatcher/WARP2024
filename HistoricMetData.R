@@ -19,28 +19,28 @@ library(viridis)
 # set working directory to github repository
 setwd("~/Desktop/Repos/WARP2024")
 
-#Load data and exclude the first rows but keep header names
+# Load data and exclude the first rows but keep header names
 Colnames <- as.character(read_xlsx("UWCUH.MetData.Seln2.Aug1999.jdatecorrected.Taylorsversion.xlsx", n_max = 1, col_names = FALSE))
 histmicroclimdata <- read_xlsx(path = "UWCUH.MetData.Seln2.Aug1999.jdatecorrected.Taylorsversion.xlsx", skip = 7, col_names = Colnames)
 
-# Select for columns needed for analysis - excluding TM13 because logger seems to have been malfunctioning during recording time
+# Select for columns needed for analysis - excluding TM13 and TM10 because logger seems to have been malfunctioning during some of the recording time
 histmicroclimdata <- histmicroclimdata %>%
-  select("YEAR", "SITE","DATE", "JDATE", "LONGTIME", "TIME", "SOLAR", "TAIR","TM1","TM2","TM3","TM4","TM5","TM6","TM7","TM8","TM9","TM10","TM11","TM12","TM14","TM15","TM16","TM17","TM18","TM19","TM20")
+  select("YEAR", "SITE","DATE", "JDATE", "LONGTIME", "TIME", "SOLAR", "TAIR","TM1","TM2","TM3","TM4","TM5","TM6","TM7","TM8","TM9","TM11","TM12","TM14","TM15","TM16","TM17","TM18","TM19","TM20")
 
 # Convert LONGTIME to a proper datetime format 
 histmicroclimdata$LONGTIME <- as.POSIXct(histmicroclimdata$LONGTIME, format = "%Y-%m-%d %H:%M:%S")
 
-# Extract only the time in HH:MM format
+# Extract only the time in HH:MM format (when I uploaded excel it inputted incorrect dates in the longtime column)
 histmicroclimdata$LONGTIME <- format(histmicroclimdata$LONGTIME, "%H:%M")
 
 # Combine DATE and LONGTIME into a single datetime column
 histmicroclimdata <- histmicroclimdata %>%
   mutate(
-    DATETIME = paste(DATE, LONGTIME),        # Combine DATE and LONGTIME
-    DATETIME = ymd_hm(DATETIME)             # Parse combined column as datetime
+    DATETIME = paste(DATE, LONGTIME), # Combine DATE and LONGTIME
+    DATETIME = ymd_hm(DATETIME) # Parse combined column as datetime
   )
 
-# Reshape data into long format for TM1 to TM20
+# Reshape data into long format for TM1 to TM20 to help with visualization
 histmicroclimdata_long <- histmicroclimdata %>%
   pivot_longer(
     cols = starts_with("TM"), # Select all columns that start with "TM"
@@ -117,3 +117,5 @@ histminmaxplot <- ggplot(temp_extremes_long, aes(x = Variable, y = Temperature, 
   
 # Print the plot
   print(hourly_plot)
+
+  
