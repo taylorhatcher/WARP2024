@@ -9,7 +9,7 @@ library(lubridate)
 library(dplyr)
 library(tidyr)
 
-setwd("~/Desktop/Repos/WARP2024")
+setwd("~/Desktop/Repos/WARP2024/Data")
 
 # Load data using fread with fill = TRUE to handle mismatched columns, I am using fread becasue I was having issues with loading my data with read.csv for some reason - researched it and came to the conclusion that fread could handle this large data set faster than csv() or read.csv()
 hobo1data2024 <-

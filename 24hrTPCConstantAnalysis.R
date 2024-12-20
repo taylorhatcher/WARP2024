@@ -12,7 +12,7 @@ library(viridis)
 library(tidyverse)
 
 # set working directory to github repository
-setwd("~/Desktop/Repos/WARP2024")
+setwd("~/Desktop/Repos/WARP2024/Data")
 
 # read in past data 
 tpc1 = read.csv("PrapaeW.1999.ConstantTempTPCs.4thinstar.jul2021.xlsx - data.csv")

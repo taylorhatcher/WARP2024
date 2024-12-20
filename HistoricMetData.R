@@ -17,7 +17,7 @@ library(readxl)
 library(viridis)
 
 # set working directory to github repository
-setwd("~/Desktop/Repos/WARP2024")
+setwd("~/Desktop/Repos/WARP2024/Data")
 
 # Load data and exclude the first rows but keep header names
 Colnames <- as.character(read_xlsx("UWCUH.MetData.Seln2.Aug1999.jdatecorrected.Taylorsversion.xlsx", n_max = 1, col_names = FALSE))
