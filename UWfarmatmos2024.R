@@ -10,7 +10,7 @@ library(dplyr)
 library(tidyr)
 
 # Set working directory to github repository for the project
-setwd("~/Desktop/Repos/WARP2024")
+setwd("~/Desktop/Repos/WARP2024/Data")
 
 atmosphericdata <- read.csv("CUHatmosphericdata2024.csv", skip = 2)
 
