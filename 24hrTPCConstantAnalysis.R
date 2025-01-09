@@ -10,6 +10,7 @@ library(patchwork)
 library(reshape2)
 library(viridis)
 library(tidyverse)
+library(lubridate)
 
 # set working directory to github repository
 setwd("~/Desktop/Repos/WARP2024/Data")
@@ -25,6 +26,7 @@ tpc2$instar=5 # identify instar
 #tpc3 = read.csv("Prapae.WAonly.csv")
 #tpc3$instar=4
 # this section of code is me trying to add in the data set for historic TRN for leaf but they aren't named similarly so I can't rbind them
+
 
 # combine past data sets using rbind
 tpc.p= rbind(tpc1, tpc2)
@@ -43,6 +45,11 @@ tpc.ps= tpc.p[,c("UniID","mom","ID","temp","instar","time","duration","mgain","r
 
 # load in recent 2024  Constant TPC data
 tpc.c = read.csv("2024PrapaeConstantTPCCombineddata.csv")
+# calculate exact durations for present data set - currently not working at all, need help!!!!
+
+tpc.c<- (difftime(t.in, t.out, units = "hours"))
+
+ 
 
 # Convert final weight column to numeric and drop nas
 tpc.c$fw <- as.numeric(tpc.c$fw)
