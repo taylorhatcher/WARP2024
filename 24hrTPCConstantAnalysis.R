@@ -45,11 +45,20 @@ tpc.ps= tpc.p[,c("UniID","mom","ID","temp","instar","time","duration","mgain","r
 
 # load in recent 2024  Constant TPC data
 tpc.c = read.csv("2024PrapaeConstantTPCCombineddata.csv")
-# calculate exact durations for present data set - currently not working at all, need help!!!!
 
-tpc.c<- (difftime(t.in, t.out, units = "hours"))
 
- 
+# calculate exact durations for present data set - currently not working at all, need help!!!! --- finish addressing this-- durations are wonky, may need to go in and edit data sheet
+#tpc.c <- data.frame(t.in = c("10:00","11:00"), t.out = c("12:00", "13:00"))
+# Paste date in time in and time out column 
+tpc.c$t.in <- paste(tpc.c$Date, tpc.c$t.in, sep = " ")
+tpc.c$t.out <- paste(tpc.c$Date, tpc.c$t.out, sep = " ")
+
+# Convert to POSIXct with correct formatting
+
+tpc.c$t.in <- as.POSIXct(tpc.c$t.in, format = "%d-%b-%y %H:%M", tz = "UTC")
+tpc.c$t.out <- as.POSIXct(tpc.c$t.out, format = "%d-%b-%y %H:%M", tz = "UTC")
+
+tpc.c$duration <- as.numeric(difftime(tpc.c$t.out, tpc.c$t.in, units = "hours"))
 
 # Convert final weight column to numeric and drop nas
 tpc.c$fw <- as.numeric(tpc.c$fw)
