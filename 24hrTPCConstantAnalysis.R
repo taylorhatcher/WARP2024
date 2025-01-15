@@ -67,6 +67,7 @@ tpc.c <- tpc.c %>%
     first_t_out = first(t.out),
     duration = as.numeric(difftime(t.out, first_t_out, units = "hours")))
 
+# take care of dead values and put nas if there are no numeric values in the cell
 tpc.c$fw <- as.numeric(tpc.c$fw)
 
 # calculate relative growth rate for current 2024 data set
