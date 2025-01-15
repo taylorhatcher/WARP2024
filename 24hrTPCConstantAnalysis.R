@@ -48,19 +48,25 @@ tpc.c = read.csv("2024PrapaeConstantTPCCombineddata.csv")
 
 
 # calculate exact durations for present data set - currently not working at all, need help!!!! --- finish addressing this-- durations are wonky, may need to go in and edit data sheet
-#tpc.c <- data.frame(t.in = c("10:00","11:00"), t.out = c("12:00", "13:00"))
 # Paste date in time in and time out column 
 tpc.c$t.in <- paste(tpc.c$Date, tpc.c$t.in, sep = " ")
 tpc.c$t.out <- paste(tpc.c$Date, tpc.c$t.out, sep = " ")
 
+# Paste mom and individual together to create UniID
+tpc.c <- tpc.c %>%
+  mutate(UniID = paste(Female, Individual, sep = " "))
+
 # Convert to POSIXct with correct formatting
+tpc.c <- tpc.c %>%
+  mutate(
+    t.in = as.POSIXct(t.in, format = "%d-%b-%y %H:%M", tz = "UTC"),
+    t.out = as.POSIXct(t.out, format = "%d-%b-%y %H:%M", tz = "UTC")
+    )%>%
+  group_by(UniID)%>% 
+  mutate(
+    first_t_out = first(t.out),
+    duration = as.numeric(difftime(t.out, first_t_out, units = "hours")))
 
-tpc.c$t.in <- as.POSIXct(tpc.c$t.in, format = "%d-%b-%y %H:%M", tz = "UTC")
-tpc.c$t.out <- as.POSIXct(tpc.c$t.out, format = "%d-%b-%y %H:%M", tz = "UTC")
-
-tpc.c$duration <- as.numeric(difftime(tpc.c$t.out, tpc.c$t.in, units = "hours"))
-
-# Convert final weight column to numeric and drop nas
 tpc.c$fw <- as.numeric(tpc.c$fw)
 
 # calculate relative growth rate for current 2024 data set
