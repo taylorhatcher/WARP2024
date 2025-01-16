@@ -12,7 +12,7 @@ library(tidyr)
 # Set working directory to github repository for the project
 setwd("~/Desktop/Repos/WARP2024/Data")
 
-atmosphericdata <- read.csv("CUHatmosphericdata2024.csv", skip = 2)
+atmosphericdata <- read.csv("UnivWashUrbHortUpdate2025.csv", skip = 2)
 
 # Combine Date and time columns and format
 atmosphericdata$datetime <- as.POSIXct(paste(atmosphericdata$Date, atmosphericdata$Time), format="%Y-%m-%d %H:%M")
