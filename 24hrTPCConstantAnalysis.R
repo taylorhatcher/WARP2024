@@ -23,11 +23,6 @@ tpc2 = read.csv("PrapaeW.1999.ConstantTempTPCs.5thinstar.jul2021.xlsx - data.csv
 names(tpc2)=names(tpc1)
 tpc2$instar=5 # identify instar
 
-#tpc3 = read.csv("Prapae.WAonly.csv")
-#tpc3$instar=4
-# this section of code is me trying to add in the data set for historic TRN for leaf but they aren't named similarly so I can't rbind them
-
-
 # combine past data sets using rbind
 tpc.p= rbind(tpc1, tpc2)
 
@@ -38,10 +33,6 @@ tpc.p$time.per= "past" # labels this data as past data set
 # ensure column names match current data column names
 tpc.ps= tpc.p[,c("UniID","mom","ID","temp","instar","time","duration","mgain","rgr","time.per")]
 
-# #plot densities for what time they did weighings in the past
-# ggplot(tpc.ps[tpc.ps$time>5 & tpc.ps$time<6.5,], aes(x=time, color=factor(instar), group=factor(instar)))+
-# geom_density()
-# table(tpc.ps$time, tpc.ps$instar)
 
 # load in recent 2024  Constant TPC data
 tpc.c = read.csv("2024PrapaeConstantTPCCombineddata.csv")
@@ -85,8 +76,9 @@ tpc.c$mgain= tpc.c$fw - tpc.c$M0
 #combine historic and current
 tpc.cs= tpc.c[,c("UniID","mom","ID","temp","instar","time","duration","mgain","rgr","time.per")]
 
+
 # combine data sets 
-tpc= rbind(tpc.cs, tpc.ps)
+tpc= rbind.data.frame(tpc.cs, tpc.ps, sort = TRUE)
 
 
 ###Plot
