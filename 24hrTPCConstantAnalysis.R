@@ -26,9 +26,13 @@ tpc2$instar=5 # identify instar
 # combine past data sets using rbind
 tpc.p= rbind(tpc1, tpc2)
 
-# calculate relative growth rate for 1999 past data set
+# calculate relative growth rate using logarthmic scale for 1999 past data set
 tpc.p$rgr= (log(tpc.p$fw) - log(tpc.p$Mo))/tpc.p$time ### ?!?!?! is this the correct way to calculate rgr?
 tpc.p$time.per= "past" # labels this data as past data set 
+
+# calculate relatvie growth rate using arithmetic scale 
+#tpc.p$rgr = (tpc.p$fw - tpc.p$Mo) / tpc.p$time 
+#tpc.p$time.per = "past"
 
 # ensure column names match current data column names
 tpc.ps= tpc.p[,c("UniID","mom","ID","temp","instar","time","duration","mgain","rgr","time.per")]
@@ -61,9 +65,14 @@ tpc.c <- tpc.c %>%
 # take care of dead values and put nas if there are no numeric values in the cell
 tpc.c$fw <- as.numeric(tpc.c$fw)
 
-# calculate relative growth rate for current 2024 data set
-tpc.c$rgr= (log(tpc.c$fw) - log(tpc.c$M0))/tpc.c$duration #!!!!!!!!check duration if it is correct --- note to self on 12/19/24 - should I calculate actual durations like joel did? May be why my error bars are so small
-tpc.c$time.per= "current"
+# calculate logarithmic scale for relative growth rate for current 2024 data set
+# tpc.c$rgr= (log(tpc.c$fw) - log(tpc.c$M0))/tpc.c$duration #!!!!!!!!check duration if it is correct --- note to self on 12/19/24 - should I calculate actual durations like joel did? May be why my error bars are so small
+# tpc.c$time.per= "current"
+
+# calculate arithmetic scale growth rate
+tpc.c$rgr = (tpc.c$fw - tpc.c$M0) / tpc.c$duration
+tpc.c$time.per = "current"
+
 
 # Make sure that new data follows naming of old data sets
 tpc.c$mom= tpc.c$Female
@@ -98,8 +107,8 @@ tpc_past <- tpc %>% filter(time.per == "past")
 
 # Create the plot for past data
 past_plot <- ggplot(tpc_past[tpc_past$dur %in% c(6, 24),], aes(x = temp, y = rgr, color = mom)) +
-  geom_point(alpha = 0.5) +
-  geom_line(aes(group = mom), alpha = 0.7) +
+  geom_point() +
+  #geom_line(aes(group = mom), alpha = 0.7) +
   facet_grid(dur ~ instar) +
   theme_bw() +
   xlab("Temperature (C)") +
@@ -115,16 +124,28 @@ tpc_current <- tpc %>% filter(time.per == "current")
 past_plot
 dev.off()
 
+# Filter out nas introduced by calculating growth rate
+tpc_current_filtered <- tpc_current %>%
+  filter(!(is.na(rgr) & duration == 0))
+
+# Exclude rows where rgr <= 0 or rgr is NA
+tpc_current_filtered <- tpc_current_filtered %>%
+  filter(rgr > 0 & !is.na(rgr))
+
+# Optionally, also exclude rows where mgain <= 0 or mgain is NA
+tpc_current_filtered <- tpc_current_filtered %>%
+  filter(mgain > 0 & !is.na(mgain))
+
 # Create the plot for current data
-current_plot <- ggplot(tpc_current[tpc_current$duration %in% c(6,24),], aes( x = temp, y = rgr, color = mom)) +
-  geom_point(alpha = 0.5) +
-  geom_line(aes(group = mom), alpha = 0.7) +
-  facet_grid(dur ~ instar) +
+current_plot <- ggplot(tpc_current_filtered[tpc_current_filtered$duration %in% c(6,24),], aes( x = temp, y = rgr, color = mom)) +
+ geom_point() +
+ # geom_line(aes(group = mom), alpha = 0.7) +
+  facet_grid(duration ~ instar) +
   theme_bw() +
   xlab("Temperature (C)") +
   ylab("RGR (mg/mg/h") +
   ggtitle("Present Data (2024)") +
-  ylim(-0.02, 0.14) +
+  ylim(-0.10, 0.14) +
   scale_color_viridis(discrete = TRUE)
 print(current_plot)
 setwd('/Volumes/GoogleDrive/Shared drives/TrEnCh/Projects/WARP/Analyses/figures/')
@@ -132,12 +153,13 @@ pdf("2024_24hrTPCConstantCurrentData")
 current_plot
 dev.off()
 
+
 #combine both individual plots for past and current data
 combined_plot <- past_plot + current_plot + plot_layout(ncol = 1)
 print(combined_plot)   
 tpc.plot <- ggplot(tpc[tpc$dur %in% c(6,24),], aes(x=temp, y=rgr, color=time.per)) +
   geom_point(alpha=0.5) +
-  geom_line(aes(group = mom, color = time.per), alpha = 0.7) + # lineage lines
+  #geom_line(aes(group = mom, color = time.per), alpha = 0.7) + # lineage lines
   facet_grid(dur ~ instar) +
   theme_bw() +
   xlab("Temperature (C)") +
@@ -179,6 +201,8 @@ tpc.plot <- ggplot(tpc.agg[tpc.agg$dur %in% c(6, 24), ],aes(x = temp, y = mean, 
 #plot family mean values 
 tpc.agg.f <- tpc %>%
   group_by(mom) %>%
-  dplyr::summarise(rgr, na.rm=TRUE) 
+  dplyr::summarise(rgr, na.rm=TRUE)
 
+sum(is.na(tpc_current$rgr))
+sum(is.na(tpc_past$rgr))
 
