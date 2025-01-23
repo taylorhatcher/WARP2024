@@ -26,16 +26,17 @@ tpc2$instar=5 # identify instar
 # combine past data sets using rbind
 tpc.p= rbind(tpc1, tpc2)
 
-# calculate relative growth rate using logarithmic scale for 1999 past data set
-tpc.p$rgrlog= (log(tpc.p$fw) - log(tpc.p$Mo))/tpc.p$time 
-tpc.p$time.per= "past" # labels this data as past data set 
-
-# calculate relative growth rate using arithmetic scale 
-tpc.p$rgrarith = (tpc.p$fw - tpc.p$Mo) / tpc.p$time 
-tpc.p$time.per = "past"
+# calculate relative growth rate using logarithmic and arithmetic scale for 1999 past data set
+tpc.p <- tpc.p%>%
+  mutate(
+    rgrlog = (log(fw) - log(Mo)) / time,
+    rgrarith = (fw - Mo) / time,
+    time.per = "past"
+  )
 
 # ensure column names match current data column names
-tpc.ps= tpc.p[,c("UniID","mom","ID","temp", "active","instar","time","duration","mgain","rgrlog","rgrarith","time.per")]
+tpc.ps= tpc.p %>%
+  select(UniID, mom, ID, temp, instar, time, duration, mgain, rgrlog, rgrarith, time.per)
 
 
 #### load in recent 2024  Constant TPC data
