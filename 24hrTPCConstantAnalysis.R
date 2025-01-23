@@ -15,7 +15,7 @@ library(lubridate)
 # set working directory to github repository
 setwd("~/Desktop/Repos/WARP2024/Data")
 
-# read in past data 
+#### read in past raw data 
 tpc1 = read.csv("PrapaeW.1999.ConstantTempTPCs.4thinstar.jul2021.xlsx - data.csv")
 tpc1$instar=4 # identify instar
 
@@ -26,24 +26,23 @@ tpc2$instar=5 # identify instar
 # combine past data sets using rbind
 tpc.p= rbind(tpc1, tpc2)
 
-# calculate relative growth rate using logarthmic scale for 1999 past data set
-tpc.p$rgr= (log(tpc.p$fw) - log(tpc.p$Mo))/tpc.p$time ### ?!?!?! is this the correct way to calculate rgr?
+# calculate relative growth rate using logarithmic scale for 1999 past data set
+tpc.p$rgrlog= (log(tpc.p$fw) - log(tpc.p$Mo))/tpc.p$time 
 tpc.p$time.per= "past" # labels this data as past data set 
 
-# calculate relatvie growth rate using arithmetic scale 
-#tpc.p$rgr = (tpc.p$fw - tpc.p$Mo) / tpc.p$time 
-#tpc.p$time.per = "past"
+# calculate relative growth rate using arithmetic scale 
+tpc.p$rgrarith = (tpc.p$fw - tpc.p$Mo) / tpc.p$time 
+tpc.p$time.per = "past"
 
 # ensure column names match current data column names
-tpc.ps= tpc.p[,c("UniID","mom","ID","temp","instar","time","duration","mgain","rgr","time.per")]
+tpc.ps= tpc.p[,c("UniID","mom","ID","temp", "active","instar","time","duration","mgain","rgrlog","rgrarith","time.per")]
 
 
-# load in recent 2024  Constant TPC data
+#### load in recent 2024  Constant TPC data
 tpc.c = read.csv("2024PrapaeConstantTPCCombineddata.csv")
 
 
-# calculate exact durations for present data set - currently not working at all, need help!!!! --- finish addressing this-- durations are wonky, may need to go in and edit data sheet
-# Paste date in time in and time out column 
+# Paste date in t.in and t.out column to make duration calculation easier
 tpc.c$t.in <- paste(tpc.c$Date, tpc.c$t.in, sep = " ")
 tpc.c$t.out <- paste(tpc.c$Date, tpc.c$t.out, sep = " ")
 
@@ -66,11 +65,11 @@ tpc.c <- tpc.c %>%
 tpc.c$fw <- as.numeric(tpc.c$fw)
 
 # calculate logarithmic scale for relative growth rate for current 2024 data set
-# tpc.c$rgr= (log(tpc.c$fw) - log(tpc.c$M0))/tpc.c$duration #!!!!!!!!check duration if it is correct --- note to self on 12/19/24 - should I calculate actual durations like joel did? May be why my error bars are so small
-# tpc.c$time.per= "current"
+ tpc.c$rgrlog= (log(tpc.c$fw) - log(tpc.c$M0))/tpc.c$duration
+ tpc.c$time.per= "current"
 
 # calculate arithmetic scale growth rate
-tpc.c$rgr = (tpc.c$fw - tpc.c$M0) / tpc.c$duration
+tpc.c$rgrarith = (tpc.c$fw - tpc.c$M0) / tpc.c$duration
 tpc.c$time.per = "current"
 
 
@@ -83,7 +82,7 @@ tpc.c$UniID= paste(tpc.c$temp, tpc.c$mom, tpc.c$ID, sep=".")
 tpc.c$mgain= tpc.c$fw - tpc.c$M0
 
 #combine historic and current
-tpc.cs= tpc.c[,c("UniID","mom","ID","temp","instar","time","duration","mgain","rgr","time.per")]
+tpc.cs= tpc.c[,c("UniID","mom","ID","temp","active","instar","time","duration","mgain","rgrlog","rgrarith","time.per")]
 
 
 # combine data sets 
@@ -93,17 +92,23 @@ tpc= rbind.data.frame(tpc.cs, tpc.ps, sort = TRUE)
 ###Plot
 
 ##Set up durations of 6hr and 24hr
-
+tpc.p$duration <- tpc.p$time
 tpc$dur=NA
 tpc$time= as.numeric(tpc$time)
 tpc[tpc$time>5 & tpc$time<6.5 & tpc$time.per=="past","dur"]=6
 tpc[tpc$time>20 & tpc$time<26 & tpc$time.per=="past","dur"]=24
 tpc[tpc$time.per=="current","dur"]= tpc[tpc$time.per=="current","duration"]
 
+tpc <- tpc%>%mutate(durbin = 
+                      case_when(
+                        duration > 5 & duration < 7 ~ 6,
+                        duration > 23 & duration < 25 ~ 24,
+                      ))
 ###separate historic and present data
 
 # Filter data for historic data set 
 tpc_past <- tpc %>% filter(time.per == "past")
+tpc_past <- tpc %>% filter(active == "y")
 
 # Create the plot for past data
 past_plot <- ggplot(tpc_past[tpc_past$dur %in% c(6, 24),], aes(x = temp, y = rgr, color = mom)) +
@@ -121,31 +126,34 @@ pdf("24hrTPCConstantHistoricData")
 
 # Filter data for current data set
 tpc_current <- tpc %>% filter(time.per == "current")
-past_plot
-dev.off()
+tpc_current <- tpc %>% filter(active == "y")
 
-# Filter out nas introduced by calculating growth rate
+
+# Filter out nas introduced by calculating growth rate and filter out values where the caterpillars were not active
 tpc_current_filtered <- tpc_current %>%
-  filter(!(is.na(rgr) & duration == 0))
+  filter(!(is.na(rgr) & durbin == 0)) 
 
 # Exclude rows where rgr <= 0 or rgr is NA
 tpc_current_filtered <- tpc_current_filtered %>%
   filter(rgr > 0 & !is.na(rgr))
 
-# Optionally, also exclude rows where mgain <= 0 or mgain is NA
-tpc_current_filtered <- tpc_current_filtered %>%
-  filter(mgain > 0 & !is.na(mgain))
+#check how many have NAs
+sum(is.na(tpc_current_filtered$mom))
+sum(is.na(tpc_current_filtered$temp))
+sum(is.na(tpc_current_filtered$rgr))
+sum(is.na(tpc_current_filtered$durbin))
+sum(is.na(tpc_current_filtered$instar))
 
 # Create the plot for current data
-current_plot <- ggplot(tpc_current_filtered[tpc_current_filtered$duration %in% c(6,24),], aes( x = temp, y = rgr, color = mom)) +
+current_plot <- ggplot(tpc_current_filtered, aes( x = temp, y = rgr, color = mom)) +
  geom_point() +
  # geom_line(aes(group = mom), alpha = 0.7) +
-  facet_grid(duration ~ instar) +
+  facet_grid(durbin ~ instar) +
   theme_bw() +
   xlab("Temperature (C)") +
   ylab("RGR (mg/mg/h") +
   ggtitle("Present Data (2024)") +
-  ylim(-0.10, 0.14) +
+  ylim(0, 0.17) +
   scale_color_viridis(discrete = TRUE)
 print(current_plot)
 setwd('/Volumes/GoogleDrive/Shared drives/TrEnCh/Projects/WARP/Analyses/figures/')
@@ -165,7 +173,7 @@ tpc.plot <- ggplot(tpc[tpc$dur %in% c(6,24),], aes(x=temp, y=rgr, color=time.per
   xlab("Temperature (C)") +
   ylab("RGR (mg/mg/h)") +
   ggtitle("2024 vs. 1999 Constant TPC") +
-  ylim(-0.02, 0.14)+
+  ylim(-0.02, 11)+
   scale_color_manual(values = c("current" = "#EE6A50", "past" = "#7AC5CD"))
 print(tpc.plot)
 setwd('/Volumes/GoogleDrive/Shared drives/TrEnCh/Projects/WARP/Analyses/figures/')
