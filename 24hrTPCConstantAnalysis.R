@@ -39,7 +39,7 @@ tpc.ps= tpc.p[,c("UniID","mom","ID","temp", "active","instar","time","duration",
 
 
 #### load in recent 2024  Constant TPC data
-tpc.c = read.csv("2024PrapaeConstantTPCCombineddata.csv")
+tpc.c = read.csv("2024PrapaeConstantTPCCombineddata.csv", skip = 1)
 
 
 # Paste date in t.in and t.out column to make duration calculation easier
