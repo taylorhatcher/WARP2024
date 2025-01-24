@@ -43,7 +43,7 @@ tpc.ps= tpc.p %>%
 tpc.c = read.csv("2024PrapaeConstantTPCCombineddata.csv", skip = 1)
 
 
-# Paste date in t.in and t.out column to make duration calculation easier
+# Process 2024 dataset 
 tpc.c$t.in <- paste(tpc.c$Date, tpc.c$t.in, sep = " ")
 tpc.c$t.out <- paste(tpc.c$Date, tpc.c$t.out, sep = " ")
 
