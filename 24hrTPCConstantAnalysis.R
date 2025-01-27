@@ -84,6 +84,7 @@ tpc.c$mgain= tpc.c$fw - tpc.c$M0
 #combine historic and current
 tpc.cs= tpc.c[,c("UniID","mom","ID","temp","active","instar","time","duration","mgain","rgrlog","rgrarith","time.per")]
 
+# something is happening here where it deletes my past time.per entries and enters present
 
 # combine data sets 
 tpc= rbind.data.frame(tpc.cs, tpc.ps, sort = TRUE)
@@ -95,6 +96,7 @@ tpc$time= as.numeric(tpc$time)
 tpc[tpc$time>5 & tpc$time<6.5 & tpc$time.per=="past","dur"]=6
 tpc[tpc$time>20 & tpc$time<26 & tpc$time.per=="past","dur"]=24
 tpc[tpc$time.per=="current","dur"]= tpc[tpc$time.per=="current","duration"]
+tpc[tpc$time.per =="past", "dur"]= tpc[tpc$time.per=="past", "duration"]
 
 tpc <- tpc%>%mutate(durbin = 
                       case_when(
