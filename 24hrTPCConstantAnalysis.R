@@ -19,15 +19,7 @@ setwd("~/Desktop/Repos/WARP2024/Data")
 tpc1 = read.csv("PrapaeW.1999.ConstantTempTPCs.4thinstar.jul2021.xlsx - data.csv")
 tpc1$instar=4 # identify instar
 
-<<<<<<< Updated upstream
-tpc2 = read.csv("PrapaeW.1999.ConstantTempTPCs.5thinstar.jul2021.xlsx - data.csv")
-names(tpc2)=names(tpc1)
-tpc2$instar=5 # identify instar
-
-# combine past data sets using rbind
-tpc.p= rbind(tpc1, tpc2)
-=======
-  # filter out and include only caterpillars who were active
+# filter out and include only caterpillars who were active
   tpc1 <- tpc1 %>% filter(active == "yes")
 
 tpc2 <- read.csv("PrapaeW.1999.ConstantTempTPCs.5thinstar.jul2021.xlsx - data.csv")
@@ -39,7 +31,6 @@ tpc2 <- tpc2 %>% filter(active == "yes")
 
 # Combine past datasets using rbind
 tpc.p <- rbind(tpc1, tpc2)
->>>>>>> Stashed changes
 
 # calculate relative growth rate using logarithmic scale for 1999 past data set
 tpc.p$rgrlog= (log(tpc.p$fw) - log(tpc.p$Mo))/tpc.p$time 
@@ -88,19 +79,18 @@ tpc.c$rgrarith = (tpc.c$fw - tpc.c$M0) / tpc.c$duration
 tpc.c$time.per = "current"
 
 
-<<<<<<< Updated upstream
+
 # Make sure that new data follows naming of old data sets
 tpc.c$mom= tpc.c$Female
 tpc.c$ID= tpc.c$Individual
 tpc.c$UniID= paste(tpc.c$temp, tpc.c$mom, tpc.c$ID, sep=".")
-=======
-  # Filter caterpillars to include the ones who were active
-  tpc.cs <- tpc.cs %>% filter(active == "y")
+
+# Filter caterpillars to include the ones who were active
+tpc.cs <- tpc.cs %>% filter(active == "y")
 
 # Ensure data types match for both datasets before combining
 tpc.ps$mom <- as.character(tpc.ps$mom)
 tpc.cs$mom <- as.character(tpc.cs$mom)
->>>>>>> Stashed changes
 
 #Calculate mass gained in each time treatment
 tpc.c$mgain= tpc.c$fw - tpc.c$M0
@@ -108,11 +98,9 @@ tpc.c$mgain= tpc.c$fw - tpc.c$M0
 #combine historic and current
 tpc.cs= tpc.c[,c("UniID","mom","ID","temp","active","instar","time","duration","mgain","rgrlog","rgrarith","time.per")]
 
-<<<<<<< Updated upstream
-# something is happening here where it deletes my past time.per entries and enters present
 
-# combine data sets 
-tpc= rbind.data.frame(tpc.cs, tpc.ps, sort = TRUE)
+# Combine past and current datasets while preserving time.per
+tpc <- rbind(tpc.cs, tpc.ps)
 
 ##Set up durations of 6hr and 24hr
 tpc.p$duration <- tpc.p$time
@@ -123,20 +111,6 @@ tpc[tpc$time>20 & tpc$time<26 & tpc$time.per=="past","dur"]=24
 tpc[tpc$time.per=="current","dur"]= tpc[tpc$time.per=="current","duration"]
 tpc[tpc$time.per =="past", "dur"]= tpc[tpc$time.per=="past", "duration"]
 
-tpc <- tpc%>%mutate(durbin = 
-                      case_when(
-                        duration > 5 & duration < 7 ~ 6,
-                        duration > 23 & duration < 25 ~ 24,
-                      ))
-
-# Filter only active caterpillars to final data frame
-tpc <- tpc %>% filter(active == "y")
-
-# Save data frame to new Csv
-write.csv(tpc, "PastPresentFilteredConstantTpc2024.csv")
-=======
-  # Combine past and current datasets while preserving time.per
-  tpc <- rbind(tpc.cs, tpc.ps)
 
 ## Set up durations of 6hr and 24hr
 tpc <- tpc %>%
