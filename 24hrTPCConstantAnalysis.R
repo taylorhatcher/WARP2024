@@ -2,7 +2,6 @@
 # 24 Hr Constant TPC Analysis for P.rapae
 # This analysis compares historical constant feeding relative growth rates at 6hr and 24hr at a constant temperature
 
-# Load required libraries 
 library(ggplot2)
 library(data.table)
 library(dplyr)
@@ -12,38 +11,34 @@ library(viridis)
 library(tidyverse)
 library(lubridate)
 
-# set working directory to github repository
+# Set working directory to GitHub repository
 setwd("~/Desktop/Repos/WARP2024/Data")
 
-#### read in past raw data 
-tpc1 = read.csv("PrapaeW.1999.ConstantTempTPCs.4thinstar.jul2021.xlsx - data.csv")
-tpc1$instar=4 # identify instar
+#### Read in past raw data
+tpc1 <- read.csv("PrapaeW.1999.ConstantTempTPCs.4thinstar.jul2021.xlsx - data.csv")
+tpc1$instar <- 4 # Identify instar
 
-tpc2 = read.csv("PrapaeW.1999.ConstantTempTPCs.5thinstar.jul2021.xlsx - data.csv")
-names(tpc2)=names(tpc1)
-tpc2$instar=5 # identify instar
+tpc2 <- read.csv("PrapaeW.1999.ConstantTempTPCs.5thinstar.jul2021.xlsx - data.csv")
+names(tpc2) <- names(tpc1)
+tpc2$instar <- 5 # Identify instar
 
-# combine past data sets using rbind
-tpc.p= rbind(tpc1, tpc2)
+# Combine past datasets using rbind
+tpc.p <- rbind(tpc1, tpc2)
 
-# calculate relative growth rate using logarithmic and arithmetic scale for 1999 past data set
-tpc.p <- tpc.p%>%
-  mutate(
-    rgrlog = (log(fw) - log(Mo)) / time,
-    rgrarith = (fw - Mo) / time,
-    time.per = "past"
-  )
+# Calculate relative growth rate using logarithmic scale for 1999 past dataset
+tpc.p$rgrlog <- (log(tpc.p$fw) - log(tpc.p$Mo)) / tpc.p$time
+tpc.p$time.per <- "past" # Label this data as past dataset
 
-# ensure column names match current data column names
-tpc.ps= tpc.p %>%
-  select(UniID, mom, ID, temp, instar, time, duration, mgain, rgrlog, rgrarith, time.per)
+# Calculate relative growth rate using arithmetic scale
+tpc.p$rgrarith <- (tpc.p$fw - tpc.p$Mo) / tpc.p$time
 
+# Ensure column names match current data column names
+tpc.ps <- tpc.p[, c("UniID", "mom", "ID", "temp", "active", "instar", "time", "duration", "mgain", "rgrlog", "rgrarith", "time.per")]
 
-#### load in recent 2024  Constant TPC data
-tpc.c = read.csv("2024PrapaeConstantTPCCombineddata.csv", skip = 1)
+#### Load in recent 2024 Constant TPC data
+tpc.c <- read.csv("2024PrapaeConstantTPCCombineddata.csv", skip = 1)
 
-
-# Process 2024 dataset 
+# Paste date in t.in and t.out columns to make duration calculation easier
 tpc.c$t.in <- paste(tpc.c$Date, tpc.c$t.in, sep = " ")
 tpc.c$t.out <- paste(tpc.c$Date, tpc.c$t.out, sep = " ")
 
@@ -56,60 +51,61 @@ tpc.c <- tpc.c %>%
   mutate(
     t.in = as.POSIXct(t.in, format = "%d-%b-%y %H:%M", tz = "UTC"),
     t.out = as.POSIXct(t.out, format = "%d-%b-%y %H:%M", tz = "UTC")
-    )%>%
-  group_by(UniID)%>% 
+  ) %>%
+  group_by(UniID) %>%
   mutate(
     first_t_out = first(t.out),
-    duration = as.numeric(difftime(t.out, first_t_out, units = "hours")))
+    duration = as.numeric(difftime(t.out, first_t_out, units = "hours"))
+  )
 
-# take care of dead values and put nas if there are no numeric values in the cell
+# Handle dead values and replace with NA if non-numeric
 tpc.c$fw <- as.numeric(tpc.c$fw)
 
-# calculate logarithmic scale for relative growth rate for current 2024 data set
- tpc.c$rgrlog= (log(tpc.c$fw) - log(tpc.c$M0))/tpc.c$duration
- tpc.c$time.per= "current"
+# Calculate logarithmic scale for relative growth rate for current 2024 dataset
+tpc.c$rgrlog <- (log(tpc.c$fw) - log(tpc.c$M0)) / tpc.c$duration
+tpc.c$time.per <- "current"
 
-# calculate arithmetic scale growth rate
-tpc.c$rgrarith = (tpc.c$fw - tpc.c$M0) / tpc.c$duration
-tpc.c$time.per = "current"
+# Calculate arithmetic scale growth rate
+tpc.c$rgrarith <- (tpc.c$fw - tpc.c$M0) / tpc.c$duration
+
+# Make sure new data follows naming of old datasets
+tpc.c$mom <- tpc.c$Female
+tpc.c$ID <- tpc.c$Individual
+tpc.c$UniID <- paste(tpc.c$temp, tpc.c$mom, tpc.c$ID, sep = ".")
+
+# Calculate mass gained in each time treatment
+tpc.c$mgain <- tpc.c$fw - tpc.c$M0
+
+# Combine current data into a subset
+tpc.cs <- tpc.c[, c("UniID", "mom", "ID", "temp", "active", "instar", "time", "duration", "mgain", "rgrlog", "rgrarith", "time.per")]
+
+# Ensure mom column is character in both datasets
+tpc.ps$mom <- as.character(tpc.ps$mom)
+tpc.cs$mom <- as.character(tpc.cs$mom)
+
+tpc.ps$time <- as.numeric(tpc.ps$time)
+tpc.cs$time <- as.numeric(tpc.cs$time)
+
+# Combine past and current datasets
+tpc <- rbind(tpc.cs, tpc.ps)
+
+## Set up durations of 6hr and 24hr
+tpc <- tpc %>% mutate(
+  durbin = case_when(
+    duration > 5 & duration < 7 ~ 6,
+    duration > 23 & duration < 25 ~ 24,
+    TRUE ~ NA_real_  # Default case with NA as a numeric value
+  )
+)
 
 
-# Make sure that new data follows naming of old data sets
-tpc.c$mom= tpc.c$Female
-tpc.c$ID= tpc.c$Individual
-tpc.c$UniID= paste(tpc.c$temp, tpc.c$mom, tpc.c$ID, sep=".")
+# Ensure consistent durations for past datasets
+tpc[tpc$time.per == "past", "dur"] <- tpc[tpc$time.per == "past", "duration"]
 
-#Calculate mass gained in each time treatment
-tpc.c$mgain= tpc.c$fw - tpc.c$M0
-
-#combine historic and current
-tpc.cs= tpc.c[,c("UniID","mom","ID","temp","active","instar","time","duration","mgain","rgrlog","rgrarith","time.per")]
+# Filter only active caterpillars for final dataset
+tpc <- tpc %>% filter(active == "y")
 
 
-# combine data sets 
-tpc= rbind.data.frame(tpc.cs, tpc.ps, sort = TRUE)
-
-
-###Plot
-
-##Set up durations of 6hr and 24hr
-tpc.p$duration <- tpc.p$time
-tpc$dur=NA
-tpc$time= as.numeric(tpc$time)
-tpc[tpc$time>5 & tpc$time<6.5 & tpc$time.per=="past","dur"]=6
-tpc[tpc$time>20 & tpc$time<26 & tpc$time.per=="past","dur"]=24
-tpc[tpc$time.per=="current","dur"]= tpc[tpc$time.per=="current","duration"]
-
-tpc <- tpc%>%mutate(durbin = 
-                      case_when(
-                        duration > 5 & duration < 7 ~ 6,
-                        duration > 23 & duration < 25 ~ 24,
-                      ))
-###separate historic and present data
-
-# Filter data for historic data set 
-tpc_past <- tpc %>% filter(time.per == "past")
-tpc_past <- tpc %>% filter(active == "y")
 
 # Create the plot for past data
 past_plot <- ggplot(tpc_past[tpc_past$dur %in% c(6, 24),], aes(x = temp, y = rgr, color = mom)) +
