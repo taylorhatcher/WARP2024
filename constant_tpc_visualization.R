@@ -56,13 +56,25 @@ current_plot_arith <- ggplot(tpcvis_current, aes( x = temp, y = rgrarith, color 
     geom_line(aes(group = mom), alpha = 0.7) +
     facet_grid(durbin ~ instar) +
     theme_bw() +
-    xlab("Temperature (C)") +
+    xlab("Temperature (°C)") +
     ylab("RGR (mg/mg/h") +
-    ggtitle("Historic Data (1999)") +
+    ggtitle("Log Scale Historic Data (1999)") +
     ylim(0, 0.20) +
     scale_color_viridis(discrete = TRUE)
-  print(current_plot)
-  
+  print(historic_plot_log)
+
+# Plot rgrarith growth rate for 1999 constant tpc data set 
+  historic_plot_arith <- ggplot(tpcvis_past, aes( x = temp, y = rgrarith, color = mom)) +
+    geom_point() +
+    geom_line(aes(group = mom), alpha = 0.7) +
+    facet_grid(durbin ~ instar) +
+    theme_bw() +
+    xlab("Temperature (°C)") +
+    ylab("Arith RGR (mg/mg/h)") +
+    ggtitle("Arith Scale Historic Data (1999)") +
+    ylim(0, 12.00) +
+    scale_color_viridis(discrete = TRUE)
+    print(historic_plot_arith)
   
    
 sum(is.na(tpcvis$mom))
