@@ -2,6 +2,7 @@
 # 24 Hr Constant TPC Analysis for P.rapae
 # This analysis compares historical constant feeding relative growth rates at 6hr and 24hr at a constant temperature
 
+# Load libraries
 library(ggplot2)
 library(data.table)
 library(dplyr)
@@ -62,51 +63,62 @@ tpc.c <- tpc.c %>%
 tpc.c$fw <- as.numeric(tpc.c$fw)
 
 # Calculate logarithmic scale for relative growth rate for current 2024 dataset
-tpc.c$rgrlog <- (log(tpc.c$fw) - log(tpc.c$M0)) / tpc.c$duration
-tpc.c$time.per <- "current"
+tpc.c <- tpc.c %>%
+  mutate(
+    rgrlog = (log(fw) - log(M0)) / duration,
+    rgrarith = (fw - M0) / duration,
+    time.per = "current" # Label this data as current dataset
+  )
 
-# Calculate arithmetic scale growth rate
-tpc.c$rgrarith <- (tpc.c$fw - tpc.c$M0) / tpc.c$duration
+# Add additional columns to match past datasets
+tpc.c <- tpc.c %>%
+  mutate(
+    mom = Female,
+    ID = Individual,
+    UniID = paste(temp, mom, ID, sep = "."),
+    mgain = fw - M0
+  )
 
-# Make sure new data follows naming of old datasets
-tpc.c$mom <- tpc.c$Female
-tpc.c$ID <- tpc.c$Individual
-tpc.c$UniID <- paste(tpc.c$temp, tpc.c$mom, tpc.c$ID, sep = ".")
-
-# Calculate mass gained in each time treatment
-tpc.c$mgain <- tpc.c$fw - tpc.c$M0
-
-# Combine current data into a subset
+# Subset the columns to match past datasets
 tpc.cs <- tpc.c[, c("UniID", "mom", "ID", "temp", "active", "instar", "time", "duration", "mgain", "rgrlog", "rgrarith", "time.per")]
 
-# Ensure mom column is character in both datasets
+# Ensure data types match for both datasets before combining
 tpc.ps$mom <- as.character(tpc.ps$mom)
 tpc.cs$mom <- as.character(tpc.cs$mom)
 
 tpc.ps$time <- as.numeric(tpc.ps$time)
 tpc.cs$time <- as.numeric(tpc.cs$time)
 
-# Combine past and current datasets
+# Check the structure of the time.per column in both datasets
+tpc.ps$time.per <- as.character(tpc.ps$time.per)
+tpc.cs$time.per <- as.character(tpc.cs$time.per)
+
+# Combine past and current datasets while preserving time.per
 tpc <- rbind(tpc.cs, tpc.ps)
-
-## Set up durations of 6hr and 24hr
-tpc <- tpc %>% mutate(
-  durbin = case_when(
-    duration > 5 & duration < 7 ~ 6,
-    duration > 23 & duration < 25 ~ 24,
-    TRUE ~ NA_real_  # Default case with NA as a numeric value
-  )
-)
-
-
-# Ensure consistent durations for past datasets
-tpc[tpc$time.per == "past", "dur"] <- tpc[tpc$time.per == "past", "duration"]
+# code works up until this point, then something happens below where all past time.per values get mutated to current
+# ## Set up durations of 6hr and 24hr
+# tpc <- tpc %>%
+#   mutate(
+#     durbin = case_when(
+#       duration > 5 & duration < 7 ~ 6,
+#       duration > 23 & duration < 25 ~ 24,
+#       TRUE ~ NA_real_  # Default case with NA as a numeric value
+#     )
+#   )
+# 
+# # Ensure consistent durations for past datasets
+# tpc <- tpc %>%
+#   mutate(dur = if_else(time.per == "past", duration, durbin))
 
 # Filter only active caterpillars for final dataset
 tpc <- tpc %>% filter(active == "y")
 
+# Final output
+head(tpc)
+
+
 # Save data frame to new Csv
-write.csv(tpc, "PastPresentFilteredConstantTpc2024.csv")
+#write.csv(tpc, "PastPresentFilteredConstantTpc2024.csv")
 
 # Create the plot for past data
 past_plot <- ggplot(tpc_past[tpc_past$dur %in% c(6, 24),], aes(x = temp, y = rgr, color = mom)) +
