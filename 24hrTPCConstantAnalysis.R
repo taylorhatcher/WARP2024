@@ -106,6 +106,7 @@ tpc <- tpc%>%mutate(durbin =
 tpc <- tpc %>% filter(active == "y")
 
 # Save data frame to new Csv
+write.csv(tpc, "PastPresentFilteredConstantTpc2024.csv")
 
 # ###separate historic and present data
 # 
