@@ -27,8 +27,8 @@ tpc2$instar=5 # identify instar
 # combine past data sets using rbind
 tpc.p= rbind(tpc1, tpc2)
 =======
-# filter out and include only caterpillars who were active
-tpc1 <- tpc1 %>% filter(active == "yes")
+  # filter out and include only caterpillars who were active
+  tpc1 <- tpc1 %>% filter(active == "yes")
 
 tpc2 <- read.csv("PrapaeW.1999.ConstantTempTPCs.5thinstar.jul2021.xlsx - data.csv")
 names(tpc2) <- names(tpc1)
@@ -70,7 +70,7 @@ tpc.c <- tpc.c %>%
   mutate(
     t.in = as.POSIXct(t.in, format = "%d-%b-%y %H:%M", tz = "UTC"),
     t.out = as.POSIXct(t.out, format = "%d-%b-%y %H:%M", tz = "UTC")
-    )%>%
+  )%>%
   group_by(UniID)%>% 
   mutate(
     first_t_out = first(t.out),
@@ -80,8 +80,8 @@ tpc.c <- tpc.c %>%
 tpc.c$fw <- as.numeric(tpc.c$fw)
 
 # calculate logarithmic scale for relative growth rate for current 2024 data set
- tpc.c$rgrlog= (log(tpc.c$fw) - log(tpc.c$M0))/tpc.c$duration
- tpc.c$time.per= "current"
+tpc.c$rgrlog= (log(tpc.c$fw) - log(tpc.c$M0))/tpc.c$duration
+tpc.c$time.per= "current"
 
 # calculate arithmetic scale growth rate
 tpc.c$rgrarith = (tpc.c$fw - tpc.c$M0) / tpc.c$duration
@@ -94,8 +94,8 @@ tpc.c$mom= tpc.c$Female
 tpc.c$ID= tpc.c$Individual
 tpc.c$UniID= paste(tpc.c$temp, tpc.c$mom, tpc.c$ID, sep=".")
 =======
-# Filter caterpillars to include the ones who were active
-tpc.cs <- tpc.cs %>% filter(active == "y")
+  # Filter caterpillars to include the ones who were active
+  tpc.cs <- tpc.cs %>% filter(active == "y")
 
 # Ensure data types match for both datasets before combining
 tpc.ps$mom <- as.character(tpc.ps$mom)
@@ -135,24 +135,24 @@ tpc <- tpc %>% filter(active == "y")
 # Save data frame to new Csv
 write.csv(tpc, "PastPresentFilteredConstantTpc2024.csv")
 =======
-# Combine past and current datasets while preserving time.per
-tpc <- rbind(tpc.cs, tpc.ps)
+  # Combine past and current datasets while preserving time.per
+  tpc <- rbind(tpc.cs, tpc.ps)
 
 ## Set up durations of 6hr and 24hr
 tpc <- tpc %>%
-   mutate(
-     durbin = case_when(
+  mutate(
+    durbin = case_when(
       time > 5 & time < 7 ~ 6,
-       time > 23 & time < 26 ~ 24,
+      time > 23 & time < 26 ~ 24,
       duration >5 & duration < 7 ~ 6,
       duration > 23 & duration < 25 ~ 24,
-       TRUE ~ NA_real_  # Default case with NA as a numeric value
-     )
-        )
- 
+      TRUE ~ NA_real_  # Default case with NA as a numeric value
+    )
+  )
+
 # Ensure consistent durations for past datasets
 #tpc <- tpc %>%
- # mutate(dur = if_else(time.per == "past", duration, durbin))
+# mutate(dur = if_else(time.per == "past", duration, durbin))
 
 # Save data frame to new Csv
 write.csv(tpc, "PastPresentFilteredConstantTpc2024.csv")
@@ -193,8 +193,8 @@ sum(is.na(tpc_current_filtered$instar))
 
 # Create the plot for current data
 current_plot <- ggplot(tpc_current_filtered, aes( x = temp, y = rgr, color = mom)) +
- geom_point() +
- # geom_line(aes(group = mom), alpha = 0.7) +
+  geom_point() +
+  # geom_line(aes(group = mom), alpha = 0.7) +
   facet_grid(durbin ~ instar) +
   theme_bw() +
   xlab("Temperature (C)") +
@@ -246,12 +246,12 @@ tpc.plot <- ggplot(tpc.agg[tpc.agg$dur %in% c(6, 24), ],aes(x = temp, y = mean, 
   ggtitle("Past vs. Present Constant TPC") +
   ylim(-0.10, 0.14) +
   scale_color_manual(values = c("current" = "#EE6A50", "past" = "#7AC5CD"))
-  #tpc$time.per <- factor(tpc$time.per, levels = c("past", "current")) 
-  print(tpc.plot)
-  setwd('/Volumes/GoogleDrive/Shared drives/TrEnCh/Projects/WARP/Analyses/figures/')
-  pdf("2024ConstantTPCFamilyMeans")
-  tpc.plot
-  dev.off()
+#tpc$time.per <- factor(tpc$time.per, levels = c("past", "current")) 
+print(tpc.plot)
+setwd('/Volumes/GoogleDrive/Shared drives/TrEnCh/Projects/WARP/Analyses/figures/')
+pdf("2024ConstantTPCFamilyMeans")
+tpc.plot
+dev.off()
 
 #plot family mean values 
 tpc.agg.f <- tpc %>%
