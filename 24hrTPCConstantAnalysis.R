@@ -105,7 +105,8 @@ tpc[tpc$time.per == "past", "dur"] <- tpc[tpc$time.per == "past", "duration"]
 # Filter only active caterpillars for final dataset
 tpc <- tpc %>% filter(active == "y")
 
-
+# Save data frame to new Csv
+write.csv(tpc, "PastPresentFilteredConstantTpc2024.csv")
 
 # Create the plot for past data
 past_plot <- ggplot(tpc_past[tpc_past$dur %in% c(6, 24),], aes(x = temp, y = rgr, color = mom)) +
