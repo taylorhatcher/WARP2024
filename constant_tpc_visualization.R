@@ -23,7 +23,7 @@ tpcvis_current <- tpcvis %>%
 # Plot rgrlog growth rate for 2024 constant tpc data set
 current_plot_log <- ggplot(tpcvis_current, aes( x = temp, y = rgrlog, color = mom)) +
   geom_point() +
-  geom_line(aes(group = mom), alpha = 0.7) +
+  #geom_line(aes(group = mom), alpha = 0.7) +
   facet_grid(durbin ~ instar) +
   theme_bw() +
   xlab("Temperature (C)") +
@@ -31,12 +31,12 @@ current_plot_log <- ggplot(tpcvis_current, aes( x = temp, y = rgrlog, color = mo
   ggtitle("Present Data (2024)") +
   ylim(0, 0.20) +
   scale_color_viridis(discrete = TRUE)
-  print(current_plot)
+  print(current_plot_log)
   
 # Plot rgrarith growth rate for 2024 constant tpc data set
 current_plot_arith <- ggplot(tpcvis_current, aes( x = temp, y = rgrarith, color = mom)) +
   geom_point() +
-  geom_line(aes(group = mom), alpha = 0.7) +
+  #geom_line(aes(group = mom), alpha = 0.7) +
   facet_grid(durbin ~ instar) +
   theme_bw() +
   xlab("Temperature (C)") +
