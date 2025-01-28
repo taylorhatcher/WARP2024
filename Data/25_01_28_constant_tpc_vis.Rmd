@@ -1,0 +1,184 @@
+---
+title: "Visualizing TPC Data (1999 vs. 2024)"
+author: "Taylor Hatcher"
+date: '2025-01-28'
+output:
+  pdf_document: default
+  html_document: default
+---
+
+
+```{r setup, include=FALSE}
+# Load required libraries
+library(ggplot2)
+library(data.table)
+library(dplyr)
+library(patchwork)
+library(reshape2)
+library(viridis)
+library(tidyverse)
+library(lubridate)
+```
+```{r}
+# Load Data 
+getwd()
+tpcvis <- read.csv("PastPresentFilteredConstantTpc2024.csv")
+```
+```{r}
+# Filter Data 
+tpcvis_current <- tpcvis %>%
+filter(time.per == "current")
+
+# Log Scale Growth Rate Calculation
+current_plot_log <- ggplot(tpcvis_current, aes(x = temp, y = rgrlog, color = mom)) +
+  geom_point() +
+  facet_grid(durbin ~ instar) +
+  theme_bw() +
+  xlab("Temperature (°C)") +
+  ylab("RGR (mg/mg/h)") +
+  ggtitle("Present Data (2024): Log Scale") +
+  ylim(0, 0.20) +
+  scale_color_viridis(discrete = TRUE)
+current_plot_log
+```
+
+``` {r}
+# Arithmetic Scale Growth Rate Calculation 
+current_plot_arith <- ggplot(tpcvis_current, aes(x = temp, y = rgrarith, color = mom)) +
+  geom_point() +
+  facet_grid(durbin ~ instar) +
+  theme_bw() +
+  xlab("Temperature (°C)") +
+  ylab("Arithmetic Growth Rate") +
+  ggtitle("Present Data (2024): Arithmetic Scale") +
+  ylim(0, 12.00) +
+  scale_color_viridis(discrete = TRUE)
+current_plot_arith
+```
+
+
+```{r}
+# Combined Scale Comparison (Current Data)
+combined_current_scale_comparison_plot <- current_plot_log + current_plot_arith + plot_layout(ncol = 1)
+combined_current_scale_comparison_plot
+```
+
+# Historic Data Analysis
+## Filter Historic Data
+``` {r}
+tpcvis_past <- tpcvis %>%
+  filter(time.per == "past")
+```
+## Log Scale Growth Rate
+``` {r}
+historic_plot_log <- ggplot(tpcvis_past, aes(x = temp, y = rgrlog, color = mom)) +
+  geom_point() +
+  facet_grid(durbin ~ instar) +
+  theme_bw() +
+  xlab("Temperature (°C)") +
+  ylab("RGR (mg/mg/h)") +
+  ggtitle("Historic Data (1999): Log Scale") +
+  ylim(0, 0.20) +
+  scale_color_viridis(discrete = TRUE)
+historic_plot_log
+```
+
+## Arithmetic Scale Growth Rate
+```{r}
+historic_plot_arith <- ggplot(tpcvis_past, aes(x = temp, y = rgrarith, color = mom)) +
+  geom_point() +
+  facet_grid(durbin ~ instar) +
+  theme_bw() +
+  xlab("Temperature (°C)") +
+  ylab("Arithmetic Growth Rate") +
+  ggtitle("Historic Data (1999): Arithmetic Scale") +
+  ylim(0, 12.00) +
+  scale_color_viridis(discrete = TRUE)
+historic_plot_arith
+```
+
+
+## Combined Scale Comparison (Historic Data)
+``` {r}
+combined_historic_scale_comparison_plot <- historic_plot_log + historic_plot_arith + plot_layout(ncol = 1)
+combined_historic_scale_comparison_plot
+```
+
+# Comparison of 1999 vs. 2024 Data
+
+## Logarithmic Scale Comparison
+```{r}
+tpc.logplot <- ggplot(tpcvis, aes(x = temp, y = rgrlog, color = time.per)) +
+  geom_point(alpha = 0.5) +
+  facet_grid(durbin ~ instar) +
+  theme_bw() +
+  xlab("Temperature (°C)") +
+  ylab("RGR (mg/mg/h)") +
+  ggtitle("1999 vs. 2024: Logarithmic Scale RGR") +
+  ylim(-0.02, 0.12) +
+  scale_color_manual(values = c("current" = "#EE6A50", "past" = "#7AC5CD"))
+tpc.logplot
+```
+
+## Arithmetic Scale Comparison
+```{r}
+tpc.arithplot <- ggplot(tpcvis, aes(x = temp, y = rgrarith, color = time.per)) +
+  geom_point(alpha = 0.5) +
+  facet_grid(durbin ~ instar) +
+  theme_bw() +
+  xlab("Temperature (°C)") +
+  ylab("Arithmetic RGR (mg/mg/h)") +
+  ggtitle("1999 vs. 2024: Arithmetic Scale RGR") +
+  ylim(-0.02, 11.0) +
+  scale_color_manual(values = c("current" = "#EE6A50", "past" = "#7AC5CD"))
+tpc.arithplot
+```
+
+
+# Aggregated Data Analysis
+## Logarithmic Scale Aggregation
+```{r}
+tpc.agglog <- tpcvis %>%
+  group_by(temp, time.per, durbin, instar) %>%
+  summarise(
+    mean = mean(rgrlog, na.rm = TRUE),
+    se = sd(rgrlog, na.rm = TRUE) / sqrt(n())
+  )
+tpc.plotlog <- ggplot(tpc.agglog[tpc.agglog$durbin %in% c(6, 24), ], aes(x = temp, y = mean, color = time.per, group = time.per)) +
+  geom_point(alpha = 0.7, size = 2) +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.3, alpha = 0.6) +
+  facet_grid(durbin ~ instar) +
+  theme_bw() +
+  xlab("Temperature (°C)") +
+  ylab("RGR (mg/mg/h)") +
+  ggtitle("Aggregated Logarithmic Scale Data") +
+  ylim(-0.10, 0.14) +
+  scale_color_manual(values = c("current" = "#EE6A50", "past" = "#7AC5CD"))
+tpc.plotlog
+```
+
+## Arithmetic Scale Aggregation
+```{r}
+tpc.aggarith <- tpcvis %>%
+  group_by(temp, time.per, durbin, instar) %>%
+  summarise(
+    mean = mean(rgrarith, na.rm = TRUE),
+    se = sd(rgrarith, na.rm = TRUE) / sqrt(n())
+  )
+tpc.plot.arith <- ggplot(tpc.aggarith[tpc.aggarith$durbin %in% c(6, 24), ], aes(x = temp, y = mean, color = time.per, group = time.per)) +
+  geom_point(alpha = 0.7, size = 2) +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.3, alpha = 0.6) +
+  facet_grid(durbin ~ instar) +
+  theme_bw() +
+  xlab("Temperature (°C)") +
+  ylab("Arithmetic RGR (mg/mg/h)") +
+  ggtitle("Aggregated Arithmetic Scale Data") +
+  ylim(-0.10, 6.00) +
+  scale_color_manual(values = c("current" = "#EE6A50", "past" = "#7AC5CD"))
+tpc.plot.arith
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+
