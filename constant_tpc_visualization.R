@@ -50,23 +50,6 @@ current_plot_arith <- ggplot(tpcvis_current, aes( x = temp, y = rgrarith, color 
   combined_current_scale_comparison_plot <- current_plot_log + current_plot_arith + plot_layout(ncol = 1)
   print(combined_current_scale_comparison_plot)  
   
-  
-  tpc.plot <- ggplot(tpc[tpc$dur %in% c(6,24),], aes(x=temp, y=rgr, color=time.per)) +
-    geom_point(alpha=0.5) +
-    #geom_line(aes(group = mom, color = time.per), alpha = 0.7) + # lineage lines
-    facet_grid(dur ~ instar) +
-    theme_bw() +
-    xlab("Temperature (C)") +
-    ylab("RGR (mg/mg/h)") +
-    ggtitle("2024 vs. 1999 Constant TPC") +
-    ylim(-0.02, 11)+
-    scale_color_manual(values = c("current" = "#EE6A50", "past" = "#7AC5CD"))
-  print(tpc.plot)
-  setwd('/Volumes/GoogleDrive/Shared drives/TrEnCh/Projects/WARP/Analyses/figures/')
-  pdf("2024ConstantTPCComparison")
-  combined_plot
-  dev.off()
-  
 # Filter out past/historic data set
   tpcvis_past <- tpcvis %>%
     filter(time.per == "past")
@@ -74,7 +57,7 @@ current_plot_arith <- ggplot(tpcvis_current, aes( x = temp, y = rgrarith, color 
 # Plot rgrlog growth rate for 1999 constant tpc data set
     historic_plot_log <- ggplot(tpcvis_past, aes( x = temp, y = rgrlog, color = mom)) +
     geom_point() +
-    geom_line(aes(group = mom), alpha = 0.7) +
+    #geom_line(aes(group = mom), alpha = 0.7) +
     facet_grid(durbin ~ instar) +
     theme_bw() +
     xlab("Temperature (°C)") +
@@ -87,7 +70,7 @@ current_plot_arith <- ggplot(tpcvis_current, aes( x = temp, y = rgrarith, color 
 # Plot rgrarith growth rate for 1999 constant tpc data set 
   historic_plot_arith <- ggplot(tpcvis_past, aes( x = temp, y = rgrarith, color = mom)) +
     geom_point() +
-    geom_line(aes(group = mom), alpha = 0.7) +
+    #geom_line(aes(group = mom), alpha = 0.7) +
     facet_grid(durbin ~ instar) +
     theme_bw() +
     xlab("Temperature (°C)") +
@@ -109,32 +92,90 @@ combined_historic_scale_comparison_plot <- historic_plot_log + historic_plot_ari
       theme_bw() +
       xlab("Temperature (C)") +
       ylab("RGR (mg/mg/h)") +
-      ggtitle("2024 vs. 1999 Constant TPC") +
+      ggtitle("2024 vs. 1999 Constant TPC Log Scale RGR") +
       ylim(-0.02, 0.12)+
       scale_color_manual(values = c("current" = "#EE6A50", "past" = "#7AC5CD"))
     print(tpc.logplot)
     #setwd('/Volumes/GoogleDrive/Shared drives/TrEnCh/Projects/WARP/Analyses/figures/')
     pdf("2024ConstantTPCComparison")
-    combined_plot
     dev.off()
 
 # Plot both historic and current arithmetic scales
     tpc.arithplot <- ggplot(tpcvis, aes(x=temp, y=rgrarith, color=time.per)) +
       geom_point(alpha=0.5) +
-      geom_line(aes(group = mom, color = time.per), alpha = 0.7) + # lineage lines
+     # geom_line(aes(group = mom, color = time.per), alpha = 0.7) + # lineage lines
       facet_grid(durbin ~ instar) +
       theme_bw() +
       xlab("Temperature (C)") +
       ylab("RGR (mg/mg/h)") +
-      ggtitle("2024 vs. 1999 Constant TPC") +
+      ggtitle("2024 vs. 1999 Constant TPC Arithmetic Scale RGR") +
       ylim(-0.02, 11.0)+
       scale_color_manual(values = c("current" = "#EE6A50", "past" = "#7AC5CD"))
     print(tpc.arithplot)
     #setwd('/Volumes/GoogleDrive/Shared drives/TrEnCh/Projects/WARP/Analyses/figures/')
     pdf("2024ConstantTPCComparison")
-    combined_plot
     dev.off()
   
+    
+    
+# Aggregate mean values with standard error calculation for logarithmic scale
+    tpc.agglog <- tpcvis %>%
+     group_by(temp, time.per, durbin, instar) %>% # need to actually calculate the precise durations and not just a flat 6 hr and 24 hr durations for the present data set
+    dplyr::summarise(
+     mean = mean(rgrlog, na.rm = TRUE),
+     se = sd(rgrlog, na.rm = TRUE) / sqrt(n())
+     )
+    
+# plotting family means w duration
+# plotting family means with error bars
+  tpc.plotlog <- ggplot(tpc.agglog[tpc.agglog$durbin %in% c(6, 24), ],aes(x = temp, y = mean, color = time.per, group = time.per)) +
+  geom_point(alpha = 0.7, size = 2) + # Points for mean values
+  geom_errorbar(aes(ymin = mean - se, ymax = mean +se), width = 0.3, alpha = 0.6) + # Error bars
+  facet_grid(durbin ~ instar) + #Facets for duration and instar
+  theme_bw() +
+  xlab("Temperature(°C)") +
+  ylab("RGR (mg/mg/hr)") +
+  ggtitle("Past vs. Present Constant TPC Logarithmic Scale") +
+  ylim(-0.10, 0.14) +
+  scale_color_manual(values = c("current" = "#EE6A50", "past" = "#7AC5CD"))
+  tpcvis$time.per <- factor(tpcvis$time.per, levels = c("past", "current")) 
+  print(tpc.plotlog)
+    
+  
+# Aggregate mean values with standard error calculation for arithmetic scale 
+  tpc.aggarith <- tpcvis%>%
+    group_by(temp, time.per, durbin, instar) %>% # need to actually calculate the precise durations and not just a flat 6 hr and 24 hr durations for the present data set
+    dplyr::summarise(
+      mean = mean(rgrarith, na.rm = TRUE),
+      se = sd(rgrarith, na.rm = TRUE) / sqrt(n())
+    )
+  
+# plotting family means with error bars
+  tpc.plot.arith <- ggplot(tpc.aggarith[tpc.aggarith$durbin %in% c(6, 24), ],aes(x = temp, y = mean, color = time.per, group = time.per)) +
+    geom_point(alpha = 0.7, size = 2) + # Points for mean values
+    geom_errorbar(aes(ymin = mean - se, ymax = mean +se), width = 0.3, alpha = 0.6) + # Error bars
+    facet_grid(durbin ~ instar) + #Facets for duration and instar
+    theme_bw() +
+    xlab("Temperature(°C)") +
+    ylab("RGR (mg/mg/hr)") +
+    ggtitle("Past vs. Present Constant TPC Arithmetic Scale") +
+    ylim(-0.10, 6.00) +
+    scale_color_manual(values = c("current" = "#EE6A50", "past" = "#7AC5CD"))
+  tpcvis$time.per <- factor(tpcvis$time.per, levels = c("past", "current")) 
+  print(tpc.plot.arith)  
+  
+  
+  
+  
+  #   setwd('/Volumes/GoogleDrive/Shared drives/TrEnCh/Projects/WARP/Analyses/figures/')
+    #   pdf("2024ConstantTPCFamilyMeans")
+    #   tpc.plot
+    #   dev.off()
+    # 
+    # #plot family mean values 
+    # tpc.agg.f <- tpc %>%
+    #   group_by(mom) %>%
+    #   dplyr::summarise(rgr, na.rm=TRUE)
 sum(is.na(tpcvis$mom))
 sum(is.na(tpcvis$temp))
  sum(is.na(tpcvis$rgrlog))
