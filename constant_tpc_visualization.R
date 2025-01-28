@@ -180,24 +180,7 @@ tpc.plot.agg.f <- ggplot(tpc.agg.f[tpc.agg.f$durbin %in% c(6,24), ], aes(x = tem
   ylim(-0.10, 0.2)
 print(tpc.plot.agg.f) 
 
-tpcvis$time.per <- factor(tpcvis$time.per, levels = c("past", "current")
-print(tpc.plot.agg.f)
+
   
-#  setwd('/Volumes/GoogleDrive/Shared drives/TrEnCh/Projects/WARP/Analyses/figures/')
-  
-  #   setwd('/Volumes/GoogleDrive/Shared drives/TrEnCh/Projects/WARP/Analyses/figures/')
-    #   pdf("2024ConstantTPCFamilyMeans")
-    #   tpc.plot
-    #   dev.off()
-    # 
-    # #plot family mean values 
-    # tpc.agg.f <- tpc %>%
-    #   group_by(mom) %>%
-    #   dplyr::summarise(rgr, na.rm=TRUE)
-sum(is.na(tpcvis$mom))
-sum(is.na(tpcvis$temp))
- sum(is.na(tpcvis$rgrlog))
-sum(is.na(tpcvis$rgrarith))
- sum(is.na(tpcvis$durbin))
-sum(is.na(tpcvis$instar))  
+
    
