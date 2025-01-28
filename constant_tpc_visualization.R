@@ -165,7 +165,25 @@ combined_historic_scale_comparison_plot <- historic_plot_log + historic_plot_ari
   print(tpc.plot.arith)  
   
   
+#plot family mean values 
+tpc.agg.f <- tpcvis %>%
+  group_by(mom, temp, durbin, time.per, instar) %>%
+  dplyr::summarise(rgrlog, na.rm=TRUE)
+
+tpc.plot.agg.f <- ggplot(tpc.agg.f[tpc.agg.f$durbin %in% c(6,24), ], aes(x = temp, y = rgrlog, color = mom, group = time.per)) +
+  geom_point(alpha = 0.7, size = 2) + # Points for mean values
+  facet_grid(durbin ~ instar) + #Facets for duration and instar
+  theme_bw() +
+  xlab("Temperature(°C)") +
+  ylab("RGR (mg/mg/hr)") +
+  ggtitle("Past vs. Present Constant TPC Family Mean Log Scale") +
+  ylim(-0.10, 0.2)
+print(tpc.plot.agg.f) 
+
+tpcvis$time.per <- factor(tpcvis$time.per, levels = c("past", "current")
+print(tpc.plot.agg.f)
   
+#  setwd('/Volumes/GoogleDrive/Shared drives/TrEnCh/Projects/WARP/Analyses/figures/')
   
   #   setwd('/Volumes/GoogleDrive/Shared drives/TrEnCh/Projects/WARP/Analyses/figures/')
     #   pdf("2024ConstantTPCFamilyMeans")
