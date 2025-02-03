@@ -122,102 +122,133 @@ start_date <- as.POSIXct("2024-06-22", format = "%Y-%m-%d")
 end_date <-
   as.POSIXct("2024-08-15 23:59:59", format = "%Y-%m-%d %H:%M:%S")
 
+# Convert datetime to just date for daily means
+filtered_data_day <- long_data%>%
+  mutate(Date = as.Date(datetime))
+
+# Divide logger information into time intervals so it is easier to visualize, split into experiment times when caterpillars were in the field 
+filtered_data_day <- long_data %>%
+  mutate(Date = as.Date(datetime)) %>%
+  mutate(Interval = case_when(
+    Date >= as.Date("2024-06-21") & Date <= as.Date("2024-07-03") ~ "2024-06-21 to 2024-07-03",
+    Date >= as.Date("2024-07-03") & Date <= as.Date("2024-07-28") ~ "2024-07-03 to 2024-07-28",
+    Date >= as.Date("2024-07-28") & Date <= as.Date("2024-08-18") ~ "2024-07-28 to 2024-08-18",
+    TRUE ~ NA_character_
+  )) %>%
+  filter(!is.na(Interval))
+
+# Calculate daily mean temperatures for all loggers combined
+dailylogger_means <- filtered_data_day %>%
+  group_by(Date, Interval) %>%
+  summarise(MeanTemperature = mean(Temperature, na.rm = TRUE), .groups = 'drop')
+
+# Plot daily mean temperature distributions for each time interval indicated above
+ggplot(dailylogger_means, aes(x = MeanTemperature, fill = Interval)) +
+  geom_density(alpha = 0.5) +
+  scale_fill_viridis_d() +
+  labs(
+    title = "2024 Daily Mean Temperature Distributions",
+    x = "Mean Temperature (°C)",
+    y = "Density",
+    fill = "Date Interval"
+  ) +
+  theme_classic(base_size = 18)
 # Filter data to include only relevant dates
-filtered_data <- long_data %>%
-  filter(datetime >= start_date & datetime <= end_date)
+#filtered_data <- long_data %>%
+#  filter(datetime >= start_date & datetime <= end_date)
 
 # Convert datetime to hourly granularity
-filtered_data <- filtered_data %>%
-  mutate(DateTime = floor_date(datetime, "hour")) %>% # floor_date filters to the hour and ignores the seconds which aren't useful 
-  mutate(Temperature = as.numeric(Temperature))
+#filtered_data <- filtered_data %>%
+#  mutate(DateTime = floor_date(datetime, "hour")) %>% # floor_date filters to the hour and ignores the seconds which aren't useful 
+#  mutate(Temperature = as.numeric(Temperature))
 
 # Calculate hourly means for each logger # code gets angry here for some reason
-hourly_means <- filtered_data %>%
-  group_by(DateTime, Logger) %>%
-  summarise(MeanTemperature = mean(Temperature, na.rm = TRUE),
-            .groups = 'drop')
+#hourly_means <- filtered_data %>%
+ # group_by(DateTime, Logger) %>%
+  #summarise(MeanTemperature = mean(Temperature, na.rm = TRUE),
+#            .groups = 'drop')
 
-long_data_filtered <- long_data %>%
-  filter(!is.na(Temperature))
+#long_data_filtered <- long_data %>%
+ # filter(!is.na(Temperature))
 
 # Calculate Min and Max temperatures for each logger
-temp_extremes <- long_data_filtered %>%
-  group_by(Logger) %>%
-  summarise(
-    T_min = ifelse(all(is.na(Temperature)), NA, min(Temperature, na.rm = TRUE)),
-    T_max = ifelse(all(is.na(Temperature)), NA, max(Temperature, na.rm = TRUE)),
-    .groups = 'drop'
-  )
+# temp_extremes <- long_data_filtered %>%
+#   group_by(Logger) %>%
+#   summarise(
+#     T_min = ifelse(all(is.na(Temperature)), NA, min(Temperature, na.rm = TRUE)),
+#     T_max = ifelse(all(is.na(Temperature)), NA, max(Temperature, na.rm = TRUE)),
+#     .groups = 'drop'
+#   )
 
-# Reshape the temp_extremes data into long format for plotting
-temp_extremes_long <- temp_extremes %>%
-  pivot_longer(
-    cols = c(T_min, T_max),
-    names_to = "Temperature_Type",
-    values_to = "Temperature"
-  )
-
-# Check how many missing values per logger - there are a lot of nas because loggers were not in sync
-missing_data_per_logger <- long_data %>%
-  group_by(Logger) %>%
-  summarise(MissingCount = sum(is.na(Temperature)))
-print(missing_data_per_logger)
-
-# plotting the Temperature Distributions- Make sure that all loggers are represented
-tempdisgraph <-
-  ggplot(long_data_filtered, aes(x = Temperature, color = Logger)) +
-  geom_density(size = 1) +
-  scale_color_viridis_d() +
-  labs(
-    title = "2024 Temperature Distribution by Logger",
-    x = "Temperature (°C)",
-    y = "Density",
-    color = "Logger"
-  )
-theme_classic(base_size = 18) +
-  theme(legend.position = c(0.8, 0.8))
-print(tempdisgraph)
-
-# Min and Max Temperature Plot (Bar Plot)
-minmaxplot <-
-  ggplot(temp_extremes_long,
-         aes(x = Logger, y = Temperature, fill = Temperature_Type)) +
-  geom_bar(stat = "identity", position = position_dodge()) +
-  scale_fill_viridis_d() +
-  labs(title = " 2024 Minimum and Maximum Temperatures by Logger",
-       x = "Logger",
-       y = "Temperature (°C)",
-       fill = "Temperature Type") +
-  theme_classic(base_size = 16) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-print(minmaxplot)
-
-# Density Plot for Full Dataset (Temperature Distributions)
-tempdensplot <-
-  ggplot(filtered_data, aes(x = Temperature, color = Logger)) +
-  geom_density(size = 1) +
-  scale_color_viridis_d() +
-  labs(
-    title = "Temperature Distributions by Logger",
-    x = "Temperature (°C)",
-    y = "Density",
-    color = "Logger"
-  ) +
-  theme_classic(base_size = 18) +
-  theme(legend.position = c(0.8, 0.8))
-print(tempdensplot)
-
-#Plot the hourly mean temperature data
-hourlymeanplot <-
-  ggplot(hourly_means,
-         aes(x = DateTime, y = MeanTemperature, color = Logger)) +
-  geom_line(size = 1) +
-  labs(
-    title = "Hourly Mean Temperature from Multiple Loggers (June 22 - August 15, 2024)",
-    x = "Date and Time",
-    y = "Mean Temperature (°C)",
-    color = "Logger"
-  ) +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-print(hourlymeanplot)
+# # Reshape the temp_extremes data into long format for plotting
+# temp_extremes_long <- temp_extremes %>%
+#   pivot_longer(
+#     cols = c(T_min, T_max),
+#     names_to = "Temperature_Type",
+#     values_to = "Temperature"
+#   )
+# 
+# # Check how many missing values per logger - there are a lot of nas because loggers were not in sync
+# missing_data_per_logger <- long_data %>%
+#   group_by(Logger) %>%
+#   summarise(MissingCount = sum(is.na(Temperature)))
+# print(missing_data_per_logger)
+# 
+# # plotting the Temperature Distributions- Make sure that all loggers are represented
+# tempdisgraph <-
+#   ggplot(long_data_filtered, aes(x = Temperature, color = Logger)) +
+#   geom_density(size = 1) +
+#   scale_color_viridis_d() +
+#   labs(
+#     title = "2024 Temperature Distribution by Logger",
+#     x = "Temperature (°C)",
+#     y = "Density",
+#     color = "Logger"
+#   )
+# theme_classic(base_size = 18) +
+#   theme(legend.position = c(0.8, 0.8))
+# print(tempdisgraph)
+# 
+# # Min and Max Temperature Plot (Bar Plot)
+# minmaxplot <-
+#   ggplot(temp_extremes_long,
+#          aes(x = Logger, y = Temperature, fill = Temperature_Type)) +
+#   geom_bar(stat = "identity", position = position_dodge()) +
+#   scale_fill_viridis_d() +
+#   labs(title = " 2024 Minimum and Maximum Temperatures by Logger",
+#        x = "Logger",
+#        y = "Temperature (°C)",
+#        fill = "Temperature Type") +
+#   theme_classic(base_size = 16) +
+#   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+# print(minmaxplot)
+# 
+# # Density Plot for Full Dataset (Temperature Distributions)
+# tempdensplot <-
+#   ggplot(filtered_data, aes(x = Temperature, color = Logger)) +
+#   geom_density(size = 1) +
+#   scale_color_viridis_d() +
+#   labs(
+#     title = "Temperature Distributions by Logger",
+#     x = "Temperature (°C)",
+#     y = "Density",
+#     color = "Logger"
+#   ) +
+#   theme_classic(base_size = 18) +
+#   theme(legend.position = c(0.8, 0.8))
+# print(tempdensplot)
+# 
+# #Plot the hourly mean temperature data
+# hourlymeanplot <-
+#   ggplot(hourly_means,
+#          aes(x = DateTime, y = MeanTemperature, color = Logger)) +
+#   geom_line(size = 1) +
+#   labs(
+#     title = "Hourly Mean Temperature from Multiple Loggers (June 22 - August 15, 2024)",
+#     x = "Date and Time",
+#     y = "Mean Temperature (°C)",
+#     color = "Logger"
+#   ) +
+#   theme_minimal() +
+#   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+# print(hourlymeanplot)
