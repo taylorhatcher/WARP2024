@@ -124,27 +124,27 @@ end_date <-
 
 # Convert datetime to just date for daily means
 filtered_data_day <- long_data%>%
-  mutate(Date = as.Date(datetime))
+  mutate(DATE = as.Date(datetime))
 
 # Divide logger information into time intervals so it is easier to visualize, split into experiment times when caterpillars were in the field 
 filtered_data_day <- long_data %>%
-  mutate(Date = as.Date(datetime)) %>%
+  mutate(DATE = as.Date(datetime)) %>%
   mutate(Interval = case_when(
-    Date >= as.Date("2024-06-21") & Date <= as.Date("2024-07-03") ~ "2024-06-21 to 2024-07-03",
-    Date >= as.Date("2024-07-03") & Date <= as.Date("2024-07-28") ~ "2024-07-03 to 2024-07-28",
-    Date >= as.Date("2024-07-28") & Date <= as.Date("2024-08-18") ~ "2024-07-28 to 2024-08-18",
+    DATE >= as.Date("2024-06-21") & DATE <= as.Date("2024-07-03") ~ "2024-06-21 to 2024-07-03",
+    DATE >= as.Date("2024-07-03") & DATE <= as.Date("2024-07-28") ~ "2024-07-03 to 2024-07-28",
+    DATE >= as.Date("2024-07-28") & DATE <= as.Date("2024-08-18") ~ "2024-07-28 to 2024-08-18",
     TRUE ~ NA_character_
   )) %>%
   filter(!is.na(Interval))
 
 # Calculate daily mean temperatures for all loggers combined
 dailylogger_means <- filtered_data_day %>%
-  group_by(Date, Interval) %>%
+  group_by(DATE, Interval) %>%
   summarise(MeanTemperature = mean(Temperature, na.rm = TRUE), .groups = 'drop')
 
 # Plot daily mean temperature distributions for each time interval indicated above
-ggplot(dailylogger_means, aes(x = MeanTemperature, fill = Interval)) +
-  geom_density(alpha = 0.5) +
+ggplot(dailylogger_means, aes(x = MeanTemperature, color = Interval)) +
+  geom_density(size = 1, alpha = 1) +
   scale_fill_viridis_d() +
   labs(
     title = "2024 Daily Mean Temperature Distributions",
@@ -153,7 +153,70 @@ ggplot(dailylogger_means, aes(x = MeanTemperature, fill = Interval)) +
     fill = "Date Interval"
   ) +
   theme_classic(base_size = 18)
-# Filter data to include only relevant dates
+
+# Load in historic met data frame
+kinghistmetdata <- read.csv("FormattedHistoricMetDataFieldSln.csv")
+
+# calculate daily means for met data from 1999
+dailyhistoriclogger_means <- kinghistmetdata %>%
+  group_by(Variable, DATE) %>%
+  summarise(MeanTemperature = mean(TAIR, na.rm = TRUE), .groups = 'drop')
+
+# Plot daily mean historic temperature distributions 
+ggplot(dailyhistoriclogger_means, aes(x = MeanTemperature, color = Variable, group = Variable)) +
+  geom_density(alpha = 0.7) +
+  scale_fill_viridis_d() +
+  labs(
+    title = "1999 Daily Mean Temperature Distributions",
+    x = "Mean Temperature (°C)",
+    y = "Density",
+    color = "Logger"
+) +
+theme_classic(base_size = 20)
+
+
+
+# Manually assign 'Interval' to historic data 
+dailyhistoriclogger_means <- dailyhistoriclogger_means %>%
+  mutate(Interval = "1999")  
+
+# Assign 'Interval' to the 2024 data (already done in your code)
+dailylogger_means <- dailylogger_means %>%
+  mutate(Interval = factor(Interval)) 
+
+# Combine both 2024 and 1999 data
+combined_means <- bind_rows(
+  dailylogger_means %>% mutate(Source = "2024"),
+  dailyhistoriclogger_means %>% mutate(Source = "1999")
+)
+
+# Plotting
+ggplot() +
+  # Plot density lines for 2024 data
+  geom_density(data = filter(combined_means, Source == "2024"),
+               aes(x = MeanTemperature, color = Interval, group = Interval),
+               size = 1) +
+  
+  # Plot density lines for 1999 data
+  geom_density(data = filter(combined_means, Source == "1999"),
+               aes(x = MeanTemperature, color = Interval, group = Interval),
+               size = 1, alpha = 0.7) +
+  
+  # Color scales for the intervals
+  scale_color_viridis_d(option = "D") +
+  
+  labs(
+    title = "1999 vs 2024 Operative Temp Logger Daily Mean Distribution",
+    x = "Mean Temperature (°C)",
+    y = "Density",
+    color = "Date Interval"
+  ) +
+  theme_classic(base_size = 18) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+    # Filter data to include only relevant dates
 #filtered_data <- long_data %>%
 #  filter(datetime >= start_date & datetime <= end_date)
 
