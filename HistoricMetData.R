@@ -47,6 +47,7 @@ histmicroclimdata_long <- histmicroclimdata %>%
     names_to = "Variable", 
     values_to = "Value"
   )
+write.csv(histmicroclimdata_long,"FormattedHistoricMetDataFieldSln.csv")
 
 # Plot all TM columns as separate lines
 AllTemperaturePlot <- ggplot(histmicroclimdata_long, aes(x = DATETIME, y = Value, color = Variable)) +
