@@ -114,7 +114,7 @@ long_data <- long_data %>%
     )
   ))
 
-# Check for any missing data in long_data
+# Check for missing data in long_data
 table(is.na(long_data$Temperature))
 
 # Define the start and end dates for filtering
@@ -175,12 +175,11 @@ ggplot(dailyhistoriclogger_means, aes(x = MeanTemperature, color = Variable, gro
 theme_classic(base_size = 20)
 
 
-
 # Manually assign 'Interval' to historic data 
 dailyhistoriclogger_means <- dailyhistoriclogger_means %>%
   mutate(Interval = "1999")  
 
-# Assign 'Interval' to the 2024 data (already done in your code)
+# Assign 'Interval' to the 2024 data 
 dailylogger_means <- dailylogger_means %>%
   mutate(Interval = factor(Interval)) 
 
