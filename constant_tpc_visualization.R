@@ -130,7 +130,7 @@ combined_historic_scale_comparison_plot <- historic_plot_log + historic_plot_ari
 # plotting family means with error bars
   tpc.plotlog <- ggplot(tpc.agglog[tpc.agglog$durbin %in% c(6, 24), ],aes(x = temp, y = mean, color = time.per, group = time.per)) +
   geom_point(alpha = 0.7, size = 2) + # Points for mean values
-  geom_errorbar(aes(ymin = mean - se, ymax = mean +se), width = 0.3, alpha = 0.6) + # Error bars
+    geom_errorbar(aes(ymin = mean - se, ymax = mean +se), width = 0.3, alpha = 0.6)+ # Error bars
   facet_grid(durbin ~ instar) + #Facets for duration and instar
   theme_bw() +
   xlab("Temperature(°C)") +
@@ -166,9 +166,10 @@ combined_historic_scale_comparison_plot <- historic_plot_log + historic_plot_ari
   
   
 #plot family mean values 
-tpc.agg.f <- tpcvis %>%
-  group_by(mom, temp, durbin, time.per, instar) %>%
-  dplyr::summarise(rgrlog, na.rm=TRUE)
+  tpc.agg.f <- tpcvis %>%
+    group_by(mom, temp, durbin, time.per, instar) %>%
+    dplyr::summarise(mean_rgrlog = mean(rgrlog, na.rm=TRUE))  
+  
 
 tpc.plot.agg.f <- ggplot(tpc.agg.f[tpc.agg.f$durbin %in% c(6,24), ], aes(x = temp, y = rgrlog, color = mom, group = time.per)) +
   geom_point(alpha = 0.7, size = 2) + # Points for mean values
@@ -181,6 +182,49 @@ tpc.plot.agg.f <- ggplot(tpc.agg.f[tpc.agg.f$durbin %in% c(6,24), ], aes(x = tem
 print(tpc.plot.agg.f) 
 
 
-  
+
+
+tpcvis_clean <- tpcvis_current %>% filter(!is.na(rgrlog))
+tpcvis_clean <- tpcvis_clean %>%
+  filter(!is.na(rgrlog) & !is.nan(rgrlog) & is.finite(rgrlog))
+
+lm_model <- lm(rgrlog ~ dur + temp, data = tpcvis_clean)
+
+
+# Analysis - grabbed code from Lauren's GardenExpt2023.R
+
+lm_model <- lm(rgrlog ~ dur + temp, data = tpcvis_clean)
+lm_model_interaction <- lm(rgrlog ~ dur * temp, data = tpcvis_clean)
+
+# Linear mixed-effects model for temp = 35
+mod.lmer <- lme(rgrlog ~ dur, random = ~1 | mom, data = tpcvis_clean[tpcvis_clean$temp == 35,])
+
+anova(mod.lmer)  # ANOVA on the mixed model
+
+# Residual plot
+plot(lm_model$residuals, main = "Residuals Plot", ylab = "Residuals", xlab = "Index")
+abline(h = 0, col = "red", lwd = 2)
+
+# Histogram of residuals to check normality
+hist(lm_model$residuals, main = "Histogram of Residuals", xlab = "Residuals", breaks = 20)
+
+# Q-Q plot for normality check
+qqnorm(lm_model$residuals)
+qqline(lm_model$residuals, col = "red", lwd = 2)
+
+anova(lm_model, lm_model_interaction)
+
+library(ggplot2)
+
+ggplot(tpcvis_clean, aes(x = temp, y = rgrlog, color = as.factor(dur))) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE) +
+  labs(title = "Interaction Between Temperature and Time",
+       x = "Temperature",
+       y = "Log Relative Growth Rate",
+       color = "Time")
+
+
+
 
    
