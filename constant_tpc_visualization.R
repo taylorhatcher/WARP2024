@@ -1,6 +1,9 @@
 # Taylor M. Hatcher 
 # This script visualizes the constant TPC data from Joel Kingsolver in 1999 and recent constant TPC data 
 #
+install.packages("lme4")
+install.packages("DHARMa")
+install.packages("car")
 # Load required libraries 
 library(ggplot2)
 library(data.table)
@@ -10,6 +13,7 @@ library(reshape2)
 library(viridis)
 library(tidyverse)
 library(lubridate)
+library(car)
 
 # set working directory to github repository
 setwd("~/Desktop/Repos/WARP2024/Data")
@@ -186,57 +190,79 @@ print(tpc.plot.agg.f)
 # Filter na's from rgrlog out
 tpcvis_cleancurrent <- tpcvis_current %>% filter(is.finite(rgrlog))
 
-lm_model <- lm(rgrlog ~ duration + temp, data = tpcvis_cleancurrent)
+# Temp is a factor for analyzing
+tpcvis_cleancurrent$temp <- as.factor(tpcvis_cleancurrent$temp)
 
+# Analysis approach
+# 1. Fit the mixed model with a quadratic time effect
+# 2. Check model fit using summary & ANOVA
+# 3. Simulate residuals with DHARMa
+# 4. Run residual diagnostics 
+# 5. Compare models (linear vs. quadratic)
+# 6. Refit the final model using REML
+# 7. Visualize residuals and predictions using DHARMa 
+library(lme4)
+# Fit mixed model with a quadratic time effect-- rgrlog= response variable, poly(duration, 2) - models duration as a quadratic polynomial, temp is a catergorical fixed effect, (1 | ID) random intercept for indivdual
+mod.lmer <- lmer(rgrlog ~ poly(duration, 2) + temp + (1 | ID),
+                 data = tpcvis_cleancurrent,
+                 REML = FALSE)
 
-# Analysis - grabbed code from Lauren's GardenExpt2023.R
+summary(mod.lmer)
+anova(mod.lmer)
 
-lm_model <- lm(rgrlog ~ duration + temp, data = tpcvis_cleancurrent)
-lm_model_interaction <- lm(rgrlog ~ duration * temp, data = tpcvis_cleancurrent)
+# Simulate residuals
+sim_res <- simulateResiduals(fittedModel = mod.lmer)
 
-# Linear mixed-effects model for all temps
-#mod.lmer <- lme(rgrlog ~ dur, random = ~1 | mom,  
-                data = tpcvis_cleancurrent %>% filter(temp %in% c(11, 17, 23, 29, 35, 40, 41)))
-#str(lm_model$residuals)
-mod.lmer <- lme(rgrlog ~ dur, random = ~1 | mom, 
-                data = tpcvis_cleancurrent %>% filter(temp == 35))
-
-summary(lm_model)
-anova(lm_model, lm_model_interaction)  # ANOVA on the mixed model
+print(sim_res)
 dev.off()
-par(mfrow = c(1, 1))
-qqnorm(lm_model$residuals)
-qqline(lm_model$residuals, col = "red", lwd = 2)
-# Residual plot
-residuals_clean <- as.numeric(lm_model$residuals)
-qqnorm(residuals_clean)
-qqline(residuals_clean, col = "red", lwd = 2)
+
+plot(sim_res)
+# Check for uniformity
+testUniformity(sim_res)
+
+# Check for overdispersion
+testDispersion(sim_res)
+
+# Check for outliers
+testOutliers(sim_res)
+
+mod.lmer_linear <- lmer(rgrlog ~ duration + temp + (1 | ID), 
+                        data = tpcvis_cleancurrent, REML = FALSE)
+
+anova(mod.lmer_linear, mod.lmer)  # Compare linear vs. quadratic
 
 
-# Histogram of residuals to check normality
-hist(lm_model$residuals, main = "Histogram of Residuals", xlab = "Residuals", breaks = 20)
 
-# Q-Q plot for normality check
-qqnorm(lm_model$residuals)
-qqline(lm_model$residuals, col = "red", lwd = 2)
+mod.lmer_final <- lmer(rgrlog ~ poly(duration, 2) + temp + (1 | ID), 
+                       data = tpcvis_cleancurrent, 
+                       REML = TRUE)  # Now using REML
 
-anova(lm_model, lm_model_interaction)
+
+library(DHARMa)
+# Simulate residuals
+sim_res <- simulateResiduals(fittedModel = mod.lmer_final)
+
+# Plot residual diagnostics
+plot(sim_res)
+
 
 library(ggplot2)
 
-ggplot(tpcvis_cleancurrent, aes(x = temp, y = rgrlog, color = as.factor(dur))) +
-  geom_point() +
-  geom_smooth(method = "lm", formula = y ~ x, se = FALSE) +
-  labs(title = "Interaction Between Temperature and Time",
-       x = "Temperature",
-       y = "Log Relative Growth Rate",
-       color = "Time")
-library(MASS)
-lm_robust <- rlm(rgrlog ~ duration + temp, data = tpcvis_cleancurrent)
-qqnorm(lm_robust$residuals)
-qqline(lm_robust$residuals, col = "red")
+# Extract predictions
+tpcvis_cleancurrent$predicted <- predict(mod.lmer_final)
+
+ggplot(tpcvis_cleancurrent, aes(x = predicted, y = rgrlog)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", col = "red") +
+  labs(title = "Observed vs. Predicted Values",
+       x = "Predicted Log Relative Growth Rate",
+       y = "Observed Log Relative Growth Rate") +
+  theme_minimal()
 
 
 
 
-   
+
+
+
+
