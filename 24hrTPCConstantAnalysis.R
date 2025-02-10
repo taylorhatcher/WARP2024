@@ -92,6 +92,9 @@ tpc.cs <- tpc.cs %>% filter(active == "y")
 tpc.ps$mom <- as.character(tpc.ps$mom)
 tpc.cs$mom <- as.character(tpc.cs$mom)
 
+tpc.ps$time <- as.character(tpc.ps$time)
+tpc.cs$time <- as.character(tpc.cs$time)
+
 #Calculate mass gained in each time treatment
 tpc.c$mgain= tpc.c$fw - tpc.c$M0
 
