@@ -33,7 +33,7 @@ tpc2 <- tpc2 %>% filter(active == "yes")
 tpc.p <- rbind(tpc1, tpc2)
 
 # calculate relative growth rate using logarithmic scale for 1999 past data set
-tpc.p$rgrlog= (log(tpc.p$fw) - log(tpc.p$Mo))/tpc.p$time 
+tpc.p$rgrlog= (log10(tpc.p$fw) - log10(tpc.p$Mo))/tpc.p$time 
 tpc.p$time.per= "past" # labels this data as past data set 
 
 # calculate relative growth rate using arithmetic scale 
@@ -71,7 +71,7 @@ tpc.c <- tpc.c %>%
 tpc.c$fw <- as.numeric(tpc.c$fw)
 
 # calculate logarithmic scale for relative growth rate for current 2024 data set
-tpc.c$rgrlog= (log(tpc.c$fw) - log(tpc.c$M0))/tpc.c$duration
+tpc.c$rgrlog= (log10(tpc.c$fw) - log10(tpc.c$M0))/tpc.c$duration
 tpc.c$time.per= "current"
 
 # calculate arithmetic scale growth rate
@@ -100,7 +100,7 @@ tpc.cs= tpc.c[,c("UniID","mom","ID","temp","active","instar","time","duration","
 
 
 # Combine past and current datasets while preserving time.per
-tpc <- rbind(tpc.cs, tpc.ps)
+tpc <- rbind(tpc.cs, tpc.ps) # code not working here - fix
 
 ##Set up durations of 6hr and 24hr
 tpc.p$duration <- tpc.p$time
