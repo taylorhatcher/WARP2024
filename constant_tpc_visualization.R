@@ -183,27 +183,35 @@ print(tpc.plot.agg.f)
 
 
 
+# Filter na's from rgrlog out
+tpcvis_cleancurrent <- tpcvis_current %>% filter(is.finite(rgrlog))
 
-tpcvis_clean <- tpcvis_current %>% filter(!is.na(rgrlog))
-tpcvis_clean <- tpcvis_clean %>%
-  filter(!is.na(rgrlog) & !is.nan(rgrlog) & is.finite(rgrlog))
-
-lm_model <- lm(rgrlog ~ dur + temp, data = tpcvis_clean)
+lm_model <- lm(rgrlog ~ duration + temp, data = tpcvis_cleancurrent)
 
 
 # Analysis - grabbed code from Lauren's GardenExpt2023.R
 
-lm_model <- lm(rgrlog ~ dur + temp, data = tpcvis_clean)
-lm_model_interaction <- lm(rgrlog ~ dur * temp, data = tpcvis_clean)
+lm_model <- lm(rgrlog ~ duration + temp, data = tpcvis_cleancurrent)
+lm_model_interaction <- lm(rgrlog ~ duration * temp, data = tpcvis_cleancurrent)
 
-# Linear mixed-effects model for temp = 35
-#mod.lmer <- lme(rgrlog ~ dur, random = ~1 | mom, data = tpcvis_clean[tpcvis_clean$temp == 35,])
+# Linear mixed-effects model for all temps
+#mod.lmer <- lme(rgrlog ~ dur, random = ~1 | mom,  
+                data = tpcvis_cleancurrent %>% filter(temp %in% c(11, 17, 23, 29, 35, 40, 41)))
+#str(lm_model$residuals)
+mod.lmer <- lme(rgrlog ~ dur, random = ~1 | mom, 
+                data = tpcvis_cleancurrent %>% filter(temp == 35))
 
-anova(mod.lmer)  # ANOVA on the mixed model
-
+summary(lm_model)
+anova(lm_model, lm_model_interaction)  # ANOVA on the mixed model
+dev.off()
+par(mfrow = c(1, 1))
+qqnorm(lm_model$residuals)
+qqline(lm_model$residuals, col = "red", lwd = 2)
 # Residual plot
-plot(lm_model$residuals, main = "Residuals Plot", ylab = "Residuals", xlab = "Index")
-abline(h = 0, col = "red", lwd = 2)
+residuals_clean <- as.numeric(lm_model$residuals)
+qqnorm(residuals_clean)
+qqline(residuals_clean, col = "red", lwd = 2)
+
 
 # Histogram of residuals to check normality
 hist(lm_model$residuals, main = "Histogram of Residuals", xlab = "Residuals", breaks = 20)
@@ -216,13 +224,17 @@ anova(lm_model, lm_model_interaction)
 
 library(ggplot2)
 
-ggplot(tpcvis_clean, aes(x = temp, y = rgrlog, color = as.factor(dur))) +
+ggplot(tpcvis_cleancurrent, aes(x = temp, y = rgrlog, color = as.factor(dur))) +
   geom_point() +
   geom_smooth(method = "lm", formula = y ~ x, se = FALSE) +
   labs(title = "Interaction Between Temperature and Time",
        x = "Temperature",
        y = "Log Relative Growth Rate",
        color = "Time")
+library(MASS)
+lm_robust <- rlm(rgrlog ~ duration + temp, data = tpcvis_cleancurrent)
+qqnorm(lm_robust$residuals)
+qqline(lm_robust$residuals, col = "red")
 
 
 
