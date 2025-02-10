@@ -178,6 +178,97 @@ tpc.plot.arith <- ggplot(tpc.aggarith[tpc.aggarith$durbin %in% c(6, 24), ], aes(
 tpc.plot.arith
 ```
 
+```{r}
+
+# Filter na's from rgrlog out
+tpcvis_cleancurrent <- tpcvis_current %>% filter(is.finite(rgrlog))
+
+# Temp is a factor for analyzing
+tpcvis_cleancurrent$temp <- as.factor(tpcvis_cleancurrent$temp)
+```
+## Analysis approach
+# 1. Fit the mixed model with a quadratic time effect
+# 2. Check model fit using summary & ANOVA
+# 3. Simulate residuals with DHARMa
+# 4. Run residual diagnostics 
+# 5. Compare models (linear vs. quadratic)
+# 6. Refit the final model using REML
+# 7. Visualize residuals and predictions using DHARMa 
+```{r}
+library(lme4)
+```
+# Fit mixed model with a quadratic time effect--
+#### rgrlog= response variable, poly(duration, 2) - models duration as a quadratic polynomial, temp is a catergorical fixed effect, (1 | ID) random intercept for indivdual
+
+```{r}
+mod.lmer <- lmer(rgrlog ~ poly(duration, 2) + temp + (1 | ID),
+                 data = tpcvis_cleancurrent,
+                 REML = FALSE)
+
+summary(mod.lmer)
+anova(mod.lmer)
+```
+# Simulate residuals
+```{r}
+sim_res <- simulateResiduals(fittedModel = mod.lmer)
+
+print(sim_res)
+
+
+plot(sim_res)
+```
+# Check for uniformity
+```{r}
+testUniformity(sim_res)
+```
+# Check for overdispersion
+```{r}
+testDispersion(sim_res)
+```
+# Check for outliers
+```{r}
+testOutliers(sim_res)
+
+mod.lmer_linear <- lmer(rgrlog ~ duration + temp + (1 | ID), 
+                        data = tpcvis_cleancurrent, REML = FALSE)
+
+anova(mod.lmer_linear, mod.lmer)  # Compare linear vs. quadratic
+
+
+
+mod.lmer_final <- lmer(rgrlog ~ poly(duration, 2) + temp + (1 | ID), 
+                       data = tpcvis_cleancurrent, 
+                       REML = TRUE)  # Now using REML
+
+```
+```{r}
+library(DHARMa)
+```
+# Simulate residuals
+```{r}
+sim_res <- simulateResiduals(fittedModel = mod.lmer_final)
+
+# Plot residual diagnostics
+plot(sim_res)
+
+```
+```{r}
+library(ggplot2)
+```
+# Extract predictions
+```{r}
+tpcvis_cleancurrent$predicted <- predict(mod.lmer_final)
+
+ggplot(tpcvis_cleancurrent, aes(x = predicted, y = rgrlog)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", col = "red") +
+  labs(title = "Observed vs. Predicted Values",
+       x = "Predicted Log Relative Growth Rate",
+       y = "Observed Log Relative Growth Rate") +
+  theme_minimal()
+```
+
+
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
 
 
