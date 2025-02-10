@@ -197,7 +197,7 @@ lm_model <- lm(rgrlog ~ dur + temp, data = tpcvis_clean)
 lm_model_interaction <- lm(rgrlog ~ dur * temp, data = tpcvis_clean)
 
 # Linear mixed-effects model for temp = 35
-mod.lmer <- lme(rgrlog ~ dur, random = ~1 | mom, data = tpcvis_clean[tpcvis_clean$temp == 35,])
+#mod.lmer <- lme(rgrlog ~ dur, random = ~1 | mom, data = tpcvis_clean[tpcvis_clean$temp == 35,])
 
 anova(mod.lmer)  # ANOVA on the mixed model
 
