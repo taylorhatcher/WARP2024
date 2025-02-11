@@ -1,7 +1,7 @@
 ---
 title: "Visualizing TPC Data (1999 vs. 2024)"
 author: "Taylor Hatcher"
-date: '2025-01-28'
+date: '2025-02-10'
 output:
   pdf_document: default
   html_document: default
@@ -24,7 +24,7 @@ library(lubridate)
 getwd()
 tpcvis <- read.csv("PastPresentFilteredConstantTpc2024.csv")
 ```
-```{r}
+```{r, include=FALSE}
 # Filter Data 
 tpcvis_current <- tpcvis %>%
 filter(time.per == "current")
@@ -42,7 +42,7 @@ current_plot_log <- ggplot(tpcvis_current, aes(x = temp, y = rgrlog, color = mom
 current_plot_log
 ```
 
-``` {r}
+``` {r, include=FALSE}
 # Arithmetic Scale Growth Rate Calculation 
 current_plot_arith <- ggplot(tpcvis_current, aes(x = temp, y = rgrarith, color = mom)) +
   geom_point() +
@@ -57,7 +57,7 @@ current_plot_arith
 ```
 
 
-```{r}
+```{r, include=FALSE}
 # Combined Scale Comparison (Current Data)
 combined_current_scale_comparison_plot <- current_plot_log + current_plot_arith + plot_layout(ncol = 1)
 combined_current_scale_comparison_plot
@@ -70,7 +70,7 @@ tpcvis_past <- tpcvis %>%
   filter(time.per == "past")
 ```
 ## Log Scale Growth Rate
-``` {r}
+``` {r, include=FALSE}
 historic_plot_log <- ggplot(tpcvis_past, aes(x = temp, y = rgrlog, color = mom)) +
   geom_point() +
   facet_grid(durbin ~ instar) +
@@ -84,7 +84,7 @@ historic_plot_log
 ```
 
 ## Arithmetic Scale Growth Rate
-```{r}
+```{r, include=FALSE}
 historic_plot_arith <- ggplot(tpcvis_past, aes(x = temp, y = rgrarith, color = mom)) +
   geom_point() +
   facet_grid(durbin ~ instar) +
@@ -99,7 +99,7 @@ historic_plot_arith
 
 
 ## Combined Scale Comparison (Historic Data)
-``` {r}
+``` {r,include=FALSE}
 combined_historic_scale_comparison_plot <- historic_plot_log + historic_plot_arith + plot_layout(ncol = 1)
 combined_historic_scale_comparison_plot
 ```
@@ -107,7 +107,7 @@ combined_historic_scale_comparison_plot
 # Comparison of 1999 vs. 2024 Data
 
 ## Logarithmic Scale Comparison
-```{r}
+```{r, include=FALSE}
 tpc.logplot <- ggplot(tpcvis, aes(x = temp, y = rgrlog, color = time.per)) +
   geom_point(alpha = 0.5) +
   facet_grid(durbin ~ instar) +
@@ -121,7 +121,7 @@ tpc.logplot
 ```
 
 ## Arithmetic Scale Comparison
-```{r}
+```{r, include=FALSE}
 tpc.arithplot <- ggplot(tpcvis, aes(x = temp, y = rgrarith, color = time.per)) +
   geom_point(alpha = 0.5) +
   facet_grid(durbin ~ instar) +
@@ -137,7 +137,7 @@ tpc.arithplot
 
 # Aggregated Data Analysis
 ## Logarithmic Scale Aggregation
-```{r}
+```{r, include=FALSE}
 tpc.agglog <- tpcvis %>%
   group_by(temp, time.per, durbin, instar) %>%
   summarise(
@@ -158,7 +158,7 @@ tpc.plotlog
 ```
 
 ## Arithmetic Scale Aggregation
-```{r}
+```{r, include=FALSE}
 tpc.aggarith <- tpcvis %>%
   group_by(temp, time.per, durbin, instar) %>%
   summarise(
@@ -210,6 +210,7 @@ anova(mod.lmer)
 ```
 # Simulate residuals
 ```{r}
+library(DHARMa)
 sim_res <- simulateResiduals(fittedModel = mod.lmer)
 
 print(sim_res)
